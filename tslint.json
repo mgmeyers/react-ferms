@@ -1,0 +1,22 @@
+{
+    "extends": "tslint:recommended",
+    "rules": {
+        "eofline": true,
+        "indent": [true, "spaces", 2],
+        "linebreak-style": [true, "LF"],
+        "no-conditional-assignment": true,
+        "no-console": {
+            "severity": "warning",
+            "options": ["debug", "info", "log", "time", "timeEnd", "trace"]
+        },
+        "no-debugger": { "severity": "warn" },
+        "no-invalid-this": { "severity": "warn" },
+        "no-return-assign": ["error", "always"],
+        "no-var-keyword": true,
+        "prefer-const":  { "severity": "warn" },
+        "prefer-template":  { "severity": "warn" },
+        "quotemark": [true, "single", "jsx-double"],
+        "semicolon": [true, "never"],
+        "ordered-imports": false
+    }
+}

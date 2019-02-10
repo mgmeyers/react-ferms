@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "alwaysStrict": true,
+        "jsx": "react",
+        "module": "commonjs",
+        "noImplicitAny": true,
+        "outDir": "./lib/",
+        "sourceMap": true,
+        "target": "es6"
+    },
+    "include": [
+        "./src/**/*"
+    ]
+}

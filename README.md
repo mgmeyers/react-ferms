@@ -14,11 +14,7 @@ status
 <Form 
     defaults={{ ... }}
     onSubmit={formVals => {}} 
-    onError={(errors, forceSubmit) => {
-        if (isOk(errors)) {
-            forceSubmit()
-        }
-    }} 
+    onError={errors => {}} 
     preValidate={formVals => {}}
     validationStrategy={someFunction}
     validateOn="change|blur|submit"

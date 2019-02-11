@@ -3,8 +3,10 @@ import { shallow } from 'enzyme'
 
 import Form from './Form'
 
-test('should mount', () => {
-  const s = shallow(<Form hello="wow" />)
+const noop = (): void => void 0
 
-  expect(s.text()).toBe('wow')
+test('should mount', () => {
+  const s = shallow(<Form onSubmit={noop} />)
+
+  expect(s.length).toBe(1)
 })

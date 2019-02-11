@@ -1,22 +1,24 @@
 {
-    "extends": "tslint:recommended",
-    "rules": {
-        "eofline": true,
-        "indent": [true, "spaces", 2],
-        "linebreak-style": [true, "LF"],
-        "no-conditional-assignment": true,
-        "no-console": {
-            "severity": "warning",
-            "options": ["debug", "info", "log", "time", "timeEnd", "trace"]
-        },
-        "no-debugger": { "severity": "warn" },
-        "no-invalid-this": { "severity": "warn" },
-        "no-return-assign": ["error", "always"],
-        "no-var-keyword": true,
-        "prefer-const":  { "severity": "warn" },
-        "prefer-template":  { "severity": "warn" },
-        "quotemark": [true, "single", "jsx-double"],
-        "semicolon": [true, "never"],
-        "ordered-imports": false
-    }
+  "extends": "tslint:recommended",
+  "rules": {
+    "arrow-parens": false,
+    "eofline": false,
+    "indent": [true, "spaces", 2],
+    "interface-name": false,
+    "linebreak-style": [true, "LF"],
+    "member-access": false,
+    "no-conditional-assignment": true,
+    "no-console": { "severity": "warning", "options": ["debug", "info", "log", "time", "timeEnd", "trace"] },
+    "no-debugger": { "severity": "warn" },
+    "no-invalid-this": { "severity": "warn" },
+    "no-return-assign": ["error", "always"],
+    "no-trailing-whitespace": false,
+    "no-var-keyword": true,
+    "ordered-imports": false,
+    "prefer-const": { "severity": "warn" },
+    "prefer-template": { "severity": "warn" },
+    "quotemark": [true, "single", "jsx-double"],
+    "semicolon": [true, "never"],
+    "trailing-comma": [true, { "esSpecCompliant": true }]
+  }
 }

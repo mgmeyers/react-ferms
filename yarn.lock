@@ -3501,6 +3501,11 @@ prompts@^2.0.1:
     kleur "^3.0.2"
     sisteransi "^1.0.0"
 
+prop-ops@1.1.4:
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/prop-ops/-/prop-ops-1.1.4.tgz#3dc8c51236f8dfea0e7740dc1f52220427b19b6d"
+  integrity sha512-N1keTUFVaBuwxU//EW3lkXgacj3h1uHoGnR4T3tPi6Q1bfP9pW7pqWeTIlFsX2sJNWXkHTS0Qe2rh6kbDW3Nwg==
+
 prop-types@^15.6.2:
   version "15.6.2"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.6.2.tgz#05d5ca77b4453e985d60fc7ff8c859094a497102"

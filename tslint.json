@@ -2,6 +2,7 @@
   "extends": "tslint:recommended",
   "rules": {
     "arrow-parens": false,
+    "curly": false,
     "eofline": false,
     "indent": [true, "spaces", 2],
     "interface-name": false,

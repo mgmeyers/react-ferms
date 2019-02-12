@@ -4,7 +4,6 @@ import FormField from 'FormField'
 import { alwaysValid, noop, sanitizeKey } from 'helpers'
 
 import {
-  FormProps,
   FormStatus,
   MapStringAny,
   TransformFn,
@@ -83,22 +82,17 @@ export default class FormFields {
     }
   }
 
-  get errors(): ValidationResults {
-    const errs: ValidationResults = []
-
-    Object.keys(this.fields).forEach(key => {
-      const fieldErrs = this.fields[key].errors
-      if (fieldErrs.length > 0) {
-        errs.push(...this.fields[key].errors)
-      }
-    })
-
-    return errs
+  get errors(): { [key: string]: ValidationResults } {
+    return Object.keys(this.fields).reduce((errs, key) => {
+      const field = this.fields[key]
+      return prop.set(errs, field.key, field.errors, true)
+    }, {})
   }
 
   get values() {
     return Object.keys(this.fields).reduce((values, key) => {
-      return prop.set(values, key, this.fields[key].value)
+      const field = this.fields[key]
+      return prop.set(values, field.key, field.value, true)
     }, {})
   }
 

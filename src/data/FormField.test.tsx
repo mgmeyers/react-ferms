@@ -1,4 +1,4 @@
-import FormField from 'FormField'
+import FormField from 'data/FormField'
 import { FormFieldJSON, FormStatus, ValidationFn } from 'types'
 
 const def: FormFieldJSON = {

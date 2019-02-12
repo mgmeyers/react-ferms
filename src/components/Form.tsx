@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as prop from 'prop-ops'
 
-import FormFields from 'FormFields'
+import FormFields from 'data/FormFields'
 
 import { FormProps } from 'types'
 

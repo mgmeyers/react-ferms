@@ -1,5 +1,5 @@
 import * as prop from 'prop-ops'
-import FormField from 'FormField'
+import FormField from 'data/FormField'
 
 import { alwaysValid, noop, sanitizeKey } from 'helpers'
 

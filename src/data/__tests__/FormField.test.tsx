@@ -1,7 +1,7 @@
 import FormField from 'data/FormField'
 import { FormFieldJSON, FormStatus } from 'types'
 
-import defaultValidationStrat from 'validation-strategy/default'
+import defaultValidationStrat from 'validation-strategies/default'
 
 const def: FormFieldJSON = {
   defaultValidateOn: 'submit',

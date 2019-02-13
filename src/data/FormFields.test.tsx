@@ -3,7 +3,7 @@ import { FormStatus } from 'types'
 
 describe('class FormFields', () => {
   test('instantiates', () => {
-    const f = new FormFields()
+    const f = new FormFields({})
 
     expect(f.values).toEqual({})
     expect(f.errors).toEqual({})
@@ -11,7 +11,7 @@ describe('class FormFields', () => {
   })
 
   test('adds fields', () => {
-    const f = new FormFields()
+    const f = new FormFields({})
     let u = f.add({ key: 'a.b' })
 
     expect(f).not.toBe(u)
@@ -45,7 +45,7 @@ describe('class FormFields', () => {
   })
 
   test('removes fields', () => {
-    const f = new FormFields()
+    const f = new FormFields({})
     let u = f.add({ key: 'a.b' }).add({ key: 'a.c' })
 
     u = u.remove('a.b')
@@ -62,7 +62,7 @@ describe('class FormFields', () => {
   })
 
   test('validates', () => {
-    const f = new FormFields()
+    const f = new FormFields({})
     const validate = (v: any) => {
       return v === 'one' ? ['nope'] : true
     }
@@ -89,7 +89,7 @@ describe('class FormFields', () => {
 
   test('validates individual field', () => {
     const mockValidation = jest.fn((v: any) => ['nope'])
-    const f = new FormFields().add({
+    const f = new FormFields({}).add({
       key: 'a',
       validate: mockValidation,
       value: '123',
@@ -103,12 +103,14 @@ describe('class FormFields', () => {
   })
 
   test('gets field', () => {
-    const f = new FormFields().add({ key: 'a', value: '123' })
+    const f = new FormFields({}).add({ key: 'a', value: '123' })
     expect(f.getField('a').value).toBe('123')
   })
 
   test('gets field values', () => {
-    const f = new FormFields().add({ key: 'a' }).add({ key: 'b.c', value: 'd' })
+    const f = new FormFields({})
+      .add({ key: 'a' })
+      .add({ key: 'b.c', value: 'd' })
 
     expect(f.values).toEqual({
       a: '',
@@ -119,7 +121,7 @@ describe('class FormFields', () => {
   })
 
   test('gets status from fields', () => {
-    let f = new FormFields()
+    let f = new FormFields({})
 
     f = f.add({ key: 'a' })
 
@@ -142,7 +144,7 @@ describe('class FormFields', () => {
 
   test('gets field errors', () => {
     const validate = (v: any) => [v]
-    let f = new FormFields(undefined, 'change')
+    let f = new FormFields({ validateOn: 'change' })
 
     f = f
       .add({ key: 'a', validate })
@@ -161,7 +163,7 @@ describe('class FormFields', () => {
   })
 
   test('sets value', () => {
-    let f = new FormFields()
+    let f = new FormFields({})
     f = f.add({ key: 'a.b', value: 'one' }).add({ key: 'a.c', value: 'two' })
 
     expect(f.values).toEqual({
@@ -185,7 +187,7 @@ describe('class FormFields', () => {
   test('sets transform', () => {
     const transformMock = jest.fn(v => `${v} hi`)
     const transformMock2 = jest.fn(v => `${v} hi2`)
-    let f = new FormFields()
+    let f = new FormFields({})
 
     f = f.add({ key: 'a', value: 'hi', transform: transformMock })
 
@@ -202,7 +204,7 @@ describe('class FormFields', () => {
   test('sets validation', () => {
     const validationMock = jest.fn(v => true)
     const validationMock2 = jest.fn(v => true)
-    let f = new FormFields(undefined, 'change')
+    let f = new FormFields({ validateOn: 'change' })
 
     f = f.add({ key: 'a', validate: validationMock }).setValue('a', 'hi')
 
@@ -216,7 +218,7 @@ describe('class FormFields', () => {
 
   test('sets validationOn', () => {
     const validationMock = jest.fn(v => true)
-    let f = new FormFields(undefined, 'submit')
+    let f = new FormFields({ validateOn: 'submit' })
 
     f = f
       .add({ key: 'a', validate: validationMock, validateOn: 'blur' })
@@ -231,15 +233,31 @@ describe('class FormFields', () => {
     expect(validationMock).toHaveBeenCalled()
   })
 
+  test('sets validation strategy', () => {
+    const stratMock = jest.fn((v: any, fn: any) => {
+      return fn(v)
+    })
+
+    let f = new FormFields({})
+      .add({ key: 'a', value: 'b' })
+      .add({ key: 'v', value: 'c' })
+
+    f = f.validate().fields
+    f = f.setValidationStrategy(stratMock)
+    f = f.validate().fields
+
+    expect(stratMock).toHaveBeenCalledTimes(2)
+  })
+
   test('sets default validationOn', () => {
     const validationMock = jest.fn(v => true)
-    let f = new FormFields(undefined, 'submit')
+    let f = new FormFields({ validateOn: 'submit' })
 
     f = f.add({ key: 'a', validate: validationMock }).setValue('a', 'hi')
 
     expect(validationMock).not.toHaveBeenCalled()
 
-    f = f.setGlobalValidateOn('change')
+    f = f.setDefaultValidateOn('change')
 
     f = f
       .add({ key: 'b', validate: validationMock, validateOn: 'blur' })
@@ -253,7 +271,7 @@ describe('class FormFields', () => {
   })
 
   test('uses defaults', () => {
-    let f = new FormFields({ a: { b: 'c' } })
+    let f = new FormFields({ defaults: { a: { b: 'c' } } })
 
     expect(f.values).toEqual({})
 

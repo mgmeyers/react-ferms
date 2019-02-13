@@ -1,5 +1,11 @@
+import FormField from 'data/FormField'
+
 export interface MapStringAny {
   [key: string]: any
+}
+
+export interface MapStringFormField {
+  [key: string]: FormField
 }
 
 export type TransformFn = (value: any) => any
@@ -27,6 +33,22 @@ export interface FormFieldJSON {
   validate?: any
   validateOn?: ValidateOnOpts
   value?: string
+}
+
+export interface AddFieldOpts {
+  key: string
+
+  transform?: TransformFn
+  validate?: any
+  validateOn?: ValidateOnOpts
+  value?: string
+}
+
+export interface FormFieldsOptions {
+  defaults?: MapStringAny
+  fields?: MapStringFormField
+  validateOn?: ValidateOnOpts
+  validationStrategy?: ValidationStrategy
 }
 
 export interface FormProps {

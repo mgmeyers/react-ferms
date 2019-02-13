@@ -16,7 +16,7 @@ export interface FormFieldValidation {
 }
 
 export default class FormField {
-  private field: FormFieldJSON
+  field: FormFieldJSON
 
   constructor(fieldDef: FormFieldJSON) {
     this.field = fieldDef

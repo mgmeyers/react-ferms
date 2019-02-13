@@ -1,86 +1,73 @@
 import * as prop from 'prop-ops'
 import FormField from 'data/FormField'
 
-import { alwaysValid, noop, sanitizeKey } from 'helpers'
+import { sanitizeKey } from 'helpers'
 import defaultValidationStrat from 'validation-strategy/default'
 
 import {
+  AddFieldOpts,
+  FormFieldsOptions,
   FormStatus,
   MapStringAny,
+  MapStringFormField,
   TransformFn,
   ValidateOnOpts,
   ValidationResults,
   ValidationStrategy,
 } from 'types'
 
-interface MapStringFormField {
-  [key: string]: FormField
-}
-
-interface MapStringValidationResults {
-  [key: string]: ValidationResults
-}
-
 export interface FormFieldsValidation {
   fields: FormFields
   valid: boolean
 }
 
-export interface AddFieldOpts {
-  key: string
-
-  transform?: TransformFn
-  validate?: any
-  validateOn?: ValidateOnOpts
-  validationStrategy?: ValidationStrategy
-  value?: string
-}
-
 export default class FormFields {
-  private defaults: MapStringAny
-  private fields: MapStringFormField
-  private globalValidateOn: ValidateOnOpts
+  private options: FormFieldsOptions
 
-  constructor(
-    defaults: MapStringAny = {},
-    globalValidateOn: ValidateOnOpts = 'submit',
-    fields: MapStringFormField = {}
-  ) {
-    this.defaults = defaults
-    this.globalValidateOn = globalValidateOn
-    this.fields = fields
+  constructor(opts: FormFieldsOptions) {
+    this.options = {
+      defaults: opts.defaults || {},
+      fields: opts.fields || {},
+      validateOn: opts.validateOn || 'submit',
+      validationStrategy: opts.validationStrategy || defaultValidationStrat,
+    }
   }
 
   add(opts: AddFieldOpts): FormFields {
     const status = !opts.value ? FormStatus.PRISTINE : FormStatus.DIRTY
+    const globalOpts = this.options
 
     const field = new FormField({
-      defaultValidateOn: this.globalValidateOn,
+      defaultValidateOn: globalOpts.validateOn,
       key: opts.key,
       status,
       transform: opts.transform,
       validate: opts.validate,
       validateOn: opts.validateOn,
-      validationStrategy: opts.validationStrategy || defaultValidationStrat,
-      value: opts.value || prop.get(this.defaults, opts.key, ''),
+      validationStrategy: globalOpts.validationStrategy,
+      value: opts.value || prop.get(globalOpts.defaults, opts.key, ''),
     })
 
     return this.update(opts.key, field)
   }
 
   remove(key: string): FormFields {
-    return new FormFields(this.defaults, this.globalValidateOn, prop.del(
-      this.fields,
-      sanitizeKey(key)
-    ) as MapStringFormField)
+    const { options } = this
+    return new FormFields(
+      prop.set(options, 'fields', prop.del(options.fields, sanitizeKey(key)))
+    )
   }
 
   validate(): FormFieldsValidation {
+    const {
+      options: { fields: currentFields },
+    } = this
+
     let valid = true
 
-    const fields = Object.keys(this.fields).reduce(
+    const fields = Object.keys(currentFields).reduce(
       (newFields: MapStringFormField, key) => {
-        const result = this.fields[key].validate()
+        const result = currentFields[key].validate()
 
         if (!result.valid) {
           valid = false
@@ -94,7 +81,7 @@ export default class FormFields {
     ) as MapStringFormField
 
     return {
-      fields: new FormFields(this.defaults, this.globalValidateOn, fields),
+      fields: new FormFields(prop.set(this.options, 'fields', fields)),
       valid,
     }
   }
@@ -110,25 +97,37 @@ export default class FormFields {
 
   getField(key: string): FormField {
     const fieldKey = sanitizeKey(key)
-    return this.fields[fieldKey]
+    return this.options.fields[fieldKey]
   }
 
-  get values() {
-    return Object.keys(this.fields).reduce((values, key) => {
-      const field = this.fields[key]
+  get values(): MapStringAny {
+    const {
+      options: { fields },
+    } = this
+
+    return Object.keys(fields).reduce((values, key) => {
+      const field = fields[key]
       return prop.set(values, field.key, field.value, true)
     }, {})
   }
 
   get status(): FormStatus {
-    return Object.keys(this.fields).reduce((status, key) => {
-      return Math.max(status, this.fields[key].status)
+    const {
+      options: { fields },
+    } = this
+
+    return Object.keys(fields).reduce((status, key) => {
+      return Math.max(status, fields[key].status)
     }, 0)
   }
 
   get errors(): { [key: string]: ValidationResults } {
-    return Object.keys(this.fields).reduce((errs, key) => {
-      const field = this.fields[key]
+    const {
+      options: { fields },
+    } = this
+
+    return Object.keys(fields).reduce((errs, key) => {
+      const field = fields[key]
       const errors = field.errors
       return errors.length > 0
         ? prop.set(errs, field.key, field.errors, true)
@@ -156,26 +155,42 @@ export default class FormFields {
     return this.update(key, field)
   }
 
-  setGlobalValidateOn(on: ValidateOnOpts): FormFields {
-    const fields = Object.keys(this.fields).reduce((newFields, key) => {
-      const f = this.fields[key]
-      return prop.set.mutate(newFields, key, f.setDefaultValidateOn(on))
+  setValidationStrategy(validationStrategy: ValidationStrategy) {
+    const {
+      options: { fields: currentFields },
+    } = this
+
+    const fields = Object.keys(currentFields).reduce((newFields, key) => {
+      const f = currentFields[key]
+      return prop.set.mutate(
+        newFields,
+        key,
+        f.setValidationStrategy(validationStrategy)
+      )
     }, {})
 
-    return new FormFields(this.defaults, on, fields)
+    return new FormFields({ ...this.options, fields, validationStrategy })
+  }
+
+  setDefaultValidateOn(validateOn: ValidateOnOpts): FormFields {
+    const {
+      options: { fields: currentFields },
+    } = this
+
+    const fields = Object.keys(currentFields).reduce((newFields, key) => {
+      const f = currentFields[key]
+      return prop.set.mutate(newFields, key, f.setDefaultValidateOn(validateOn))
+    }, {})
+
+    return new FormFields({ ...this.options, validateOn, fields })
   }
 
   setDefaults(defaults: MapStringAny): FormFields {
-    return new FormFields(defaults, this.globalValidateOn, this.fields)
+    return new FormFields(prop.set(this.options, 'defaults', defaults))
   }
 
   private update(key: string, field: FormField): FormFields {
     const fieldKey = sanitizeKey(key)
-
-    return new FormFields(this.defaults, this.globalValidateOn, prop.set(
-      this.fields,
-      fieldKey,
-      field
-    ) as MapStringFormField)
+    return new FormFields(prop.set(this.options, `fields.${fieldKey}`, field))
   }
 }

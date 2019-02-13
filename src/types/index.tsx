@@ -4,8 +4,11 @@ export interface MapStringAny {
 
 export type TransformFn = (value: any) => any
 export type ValidateOnOpts = 'change' | 'blur' | 'submit'
-export type ValidationFn = (value: any) => ValidationResults
 export type ValidationResults = true | Array<string | Error | JSX.Element>
+export type ValidationStrategy = (
+  value: any,
+  validation: any
+) => ValidationResults
 
 export enum FormStatus {
   PRISTINE,
@@ -14,12 +17,14 @@ export enum FormStatus {
 }
 
 export interface FormFieldJSON {
+  defaultValidateOn: ValidateOnOpts
   key: string
+  validationStrategy: ValidationStrategy
 
   errors?: Array<string | JSX.Element>
   status?: FormStatus
   transform?: TransformFn
-  validate?: ValidationFn
+  validate?: any
   validateOn?: ValidateOnOpts
   value?: string
 }
@@ -27,10 +32,10 @@ export interface FormFieldJSON {
 export interface FormProps {
   defaults?: object
   validateOn?: ValidateOnOpts
+  validationStrategy?: ValidationStrategy
 
   onSubmit(values: object): void
 
   preValidate?(): void
   onError?(errors: { [key: string]: ValidationResults }): void
-  validationStrategy?(value: any, validate: ValidationFn): ValidationResults
 }

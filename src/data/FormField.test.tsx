@@ -1,13 +1,17 @@
 import FormField from 'data/FormField'
-import { FormFieldJSON, FormStatus, ValidationFn } from 'types'
+import { FormFieldJSON, FormStatus } from 'types'
+
+import defaultValidationStrat from 'validation-strategy/default'
 
 const def: FormFieldJSON = {
+  defaultValidateOn: 'submit',
   errors: ['1', '2'],
   key: 'a.b.c',
   status: FormStatus.DIRTY,
   transform: v => v,
-  validate: v => true,
+  validate: () => true,
   validateOn: 'blur',
+  validationStrategy: defaultValidationStrat,
   value: 'hi',
 }
 
@@ -22,7 +26,11 @@ describe('class FormField', () => {
     expect(f.value).toBe(def.value)
     expect(f.rawValue).toBe(def.value)
 
-    f = new FormField({ key: 'wow' })
+    f = new FormField({
+      defaultValidateOn: 'submit',
+      key: 'wow',
+      validationStrategy: defaultValidationStrat,
+    })
 
     expect(f.status).toBe(FormStatus.PRISTINE)
     expect(f.errors).toEqual([])
@@ -48,6 +56,28 @@ describe('class FormField', () => {
     expect(f.validateOn).not.toBe(u.validateOn)
   })
 
+  test('sets defaultValidateOn', () => {
+    const validateMock = jest.fn(v => v)
+    let f = new FormField({
+      defaultValidateOn: 'submit',
+      key: 'a.b.c',
+      validate: validateMock,
+      validationStrategy: defaultValidationStrat,
+    })
+
+    f = f.setValue('pow')
+
+    expect(validateMock).not.toHaveBeenCalled()
+
+    const u = f.setDefaultValidateOn('change')
+
+    expect(f).not.toBe(u)
+
+    u.setValue('wow')
+
+    expect(validateMock).toHaveBeenCalled()
+  })
+
   test('sets validate', () => {
     const validateMock = jest.fn(v => v)
     const f = new FormField(def)
@@ -58,6 +88,17 @@ describe('class FormField', () => {
     u = u.validate().field
 
     expect(validateMock).toHaveBeenCalled()
+  })
+
+  test('sets validationStrategy', () => {
+    const stratMock = jest.fn((v, fn) => fn(v))
+    const f = new FormField(def)
+    const u = f.setValidationStrategy(stratMock)
+
+    expect(f).not.toBe(u)
+    u.validate()
+
+    expect(stratMock).toHaveBeenCalled()
   })
 
   test('sets value', () => {
@@ -87,7 +128,7 @@ describe('class FormField', () => {
   })
 
   test('validates', () => {
-    const validate: ValidationFn = v => (v === 'hi' ? true : ['error'])
+    const validate = (v: any) => (v === 'hi' ? true : ['error'])
     let f = new FormField(def).setValidate(validate)
     let res = f.validate()
 

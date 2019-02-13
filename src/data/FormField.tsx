@@ -6,8 +6,8 @@ import {
   FormFieldJSON,
   FormStatus,
   TransformFn,
-  ValidationFn,
   ValidateOnOpts,
+  ValidationStrategy,
 } from 'types'
 
 export interface FormFieldValidation {
@@ -23,8 +23,9 @@ export default class FormField {
   }
 
   validate(): FormFieldValidation {
+    const validationStrategy = this.field.validationStrategy
     const validate = this.field.validate || alwaysValid
-    const results = validate(this.value)
+    const results = validationStrategy(this.value, validate)
     const valid = results === true
 
     const updatedField = prop.set.mutate(
@@ -60,7 +61,7 @@ export default class FormField {
   }
 
   get validateOn(): ValidateOnOpts {
-    return this.field.validateOn || 'submit'
+    return this.field.validateOn || this.field.defaultValidateOn
   }
 
   get value(): string {
@@ -79,7 +80,7 @@ export default class FormField {
   setValue(value: string): FormField {
     let updatedField = this.update('value', value)
 
-    if (this.field.validateOn === 'change') {
+    if (this.validateOn === 'change') {
       updatedField = updatedField.validate().field
     }
 
@@ -90,12 +91,20 @@ export default class FormField {
     return this.update('transform', value)
   }
 
-  setValidate(value: ValidationFn): FormField {
+  setValidate(value: any): FormField {
     return this.update('validate', value)
   }
 
   setValidateOn(value: ValidateOnOpts): FormField {
     return this.update('validateOn', value)
+  }
+
+  setDefaultValidateOn(value: ValidateOnOpts): FormField {
+    return this.update('defaultValidateOn', value)
+  }
+
+  setValidationStrategy(value: ValidationStrategy): FormField {
+    return this.update('validationStrategy', value)
   }
 
   private update(key: string, value: any): FormField {

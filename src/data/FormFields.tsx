@@ -113,16 +113,6 @@ export default class FormFields {
     return this.fields[fieldKey]
   }
 
-  get errors(): { [key: string]: ValidationResults } {
-    return Object.keys(this.fields).reduce((errs, key) => {
-      const field = this.fields[key]
-      const errors = field.errors
-      return errors.length > 0
-        ? prop.set(errs, field.key, field.errors, true)
-        : errs
-    }, {})
-  }
-
   get values() {
     return Object.keys(this.fields).reduce((values, key) => {
       const field = this.fields[key]
@@ -134,6 +124,16 @@ export default class FormFields {
     return Object.keys(this.fields).reduce((status, key) => {
       return Math.max(status, this.fields[key].status)
     }, 0)
+  }
+
+  get errors(): { [key: string]: ValidationResults } {
+    return Object.keys(this.fields).reduce((errs, key) => {
+      const field = this.fields[key]
+      const errors = field.errors
+      return errors.length > 0
+        ? prop.set(errs, field.key, field.errors, true)
+        : errs
+    }, {})
   }
 
   setValue(key: string, value: string): FormFields {

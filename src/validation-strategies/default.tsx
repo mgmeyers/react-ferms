@@ -1,6 +1,6 @@
-import { ValidationFn, ValidationResults } from 'types'
+import { ValidationResults } from 'types'
 
 export default (value: any, validation: any): ValidationResults => {
-  const fn = validation as ValidationFn
+  const fn = validation as (v: any) => ValidationResults
   return fn(value)
 }

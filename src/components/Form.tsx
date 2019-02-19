@@ -2,6 +2,7 @@ import * as React from 'react'
 import * as prop from 'prop-ops'
 
 import FormFields from 'data/FormFields'
+import { noop } from 'helpers'
 
 import { AddFieldOpts, FormProps, ValidateOnOpts, TransformFn } from 'types'
 
@@ -9,11 +10,29 @@ interface FormState {
   fields: FormFields
 }
 
-export const FormContext = React.createContext<FormState>({
+export interface IFormContext {
+  add: (field: AddFieldOpts) => void
+  fields: FormFields
+  remove: (key: string) => void
+  setTransform: (key: string, transform: TransformFn) => void
+  setValidateOn: (key: string, validateOn: ValidateOnOpts) => void
+  setValidation: (key: string, validate: any) => void
+  setValue: (key: string, value: string) => void
+  validateField: (key: string) => void
+}
+
+export const FormContext = React.createContext<IFormContext>({
+  add: noop,
   fields: new FormFields({}),
+  remove: noop,
+  setTransform: noop,
+  setValidateOn: noop,
+  setValidation: noop,
+  setValue: noop,
+  validateField: noop,
 })
 
-class Form extends React.Component<FormProps, FormState> {
+class Form extends React.PureComponent<FormProps, FormState> {
   constructor(props: FormProps) {
     super(props)
 
@@ -100,9 +119,22 @@ class Form extends React.Component<FormProps, FormState> {
     this.setState(state => prop.set(state, 'fields', fn(state.fields)))
   }
 
+  get contextValue() {
+    return {
+      add: this.add,
+      fields: this.state.fields,
+      remove: this.remove,
+      setTransform: this.setTransform,
+      setValidateOn: this.setValidateOn,
+      setValidation: this.setValidation,
+      setValue: this.setValue,
+      validateField: this.validateField,
+    }
+  }
+
   render() {
     return (
-      <FormContext.Provider value={this.state}>
+      <FormContext.Provider value={this.contextValue}>
         <form onSubmit={this.handleSubmit}>{this.props.children}</form>
       </FormContext.Provider>
     )

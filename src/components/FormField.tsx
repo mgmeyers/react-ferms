@@ -3,7 +3,7 @@ import * as React from 'react'
 import { FormContext, IFormContext } from './Form'
 import { TransformFn, ValidateOnOpts } from 'types'
 
-interface FieldProps {
+interface FormFieldProps {
   name: string
 
   transform?: TransformFn
@@ -12,7 +12,7 @@ interface FieldProps {
 }
 
 abstract class FormField<T> extends React.PureComponent<
-  FieldProps & T,
+  FormFieldProps & T,
   {},
   IFormContext
 > {
@@ -30,7 +30,7 @@ abstract class FormField<T> extends React.PureComponent<
     })
   }
 
-  componentDidUpdate(prevProps: FieldProps) {
+  componentDidUpdate(prevProps: FormFieldProps) {
     const { name: key, transform, validate, validateOn } = this.props
 
     if (transform !== prevProps.transform) {

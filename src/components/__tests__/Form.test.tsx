@@ -111,9 +111,7 @@ describe('<Form />', () => {
 
     i.setValue('a', 'hi')
 
-    expect(i.state.fields.getField('a').field.validationStrategy).toBe(
-      stratMock
-    )
+    expect(i.state.fields.getField('a').validationStrategy).toBe(stratMock)
 
     expect(validate).toHaveBeenCalled()
     expect(stratMock).toHaveBeenCalled()

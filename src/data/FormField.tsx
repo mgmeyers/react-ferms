@@ -64,6 +64,10 @@ export default class FormField {
     return this.field.validateOn || this.field.defaultValidateOn
   }
 
+  get validationStrategy(): any {
+    return this.field.validationStrategy
+  }
+
   get value(): string {
     const transform = this.field.transform || noop
     return transform(this.field.value || '')

@@ -1,10 +1,10 @@
 import * as React from 'react'
 import FormField from './FormField'
 
-type ElementType = HTMLInputElement
-type InputProps = React.HTMLProps<ElementType>
+type ElementType = HTMLTextAreaElement
+type TextareaProps = React.HTMLProps<ElementType>
 
-export class FormInput extends FormField<InputProps> {
+export class FormTextarea extends FormField<TextareaProps> {
   handleBlur = (e: React.FocusEvent<ElementType>) => {
     const { onBlur, validateOn } = this.props
 
@@ -31,7 +31,7 @@ export class FormInput extends FormField<InputProps> {
     const { transform, validate, validateOn, ...inputProps } = this.props
 
     return (
-      <input
+      <textarea
         {...inputProps}
         onBlur={this.handleBlur}
         onChange={this.handleChange}
@@ -41,4 +41,4 @@ export class FormInput extends FormField<InputProps> {
   }
 }
 
-export default FormField.withContext<InputProps>(FormInput)
+export default FormField.withContext<TextareaProps>(FormTextarea)

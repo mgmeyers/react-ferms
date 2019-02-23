@@ -61,5 +61,3 @@ export interface FormProps {
   preValidate?(): void
   onError?(errors: { [key: string]: ValidationResults }): void
 }
-
-export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>

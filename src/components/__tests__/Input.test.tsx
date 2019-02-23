@@ -7,9 +7,6 @@ import FormFields from 'data/FormFields'
 
 import { noop } from 'helpers'
 
-import { FormFieldProps } from 'components/FormField'
-import { Omit } from 'types'
-
 const defaultCtx = {
   add: noop,
   fields: new FormFields({}),
@@ -196,7 +193,7 @@ describe('<Input />', () => {
     const onSubmit = jest.fn()
     const s = mount(
       <Form onSubmit={onSubmit}>
-        <Input name="test" transform={v => v + v.toUpperCase()} />
+        <Input name="test" transform={(v: string) => v + v.toUpperCase()} />
       </Form>
     )
 

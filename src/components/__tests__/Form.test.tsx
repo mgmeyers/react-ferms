@@ -8,7 +8,7 @@ const noop = (): void => void 0
 describe('<Form />', () => {
   test('should mount', () => {
     const s = shallow(<Form onSubmit={noop} />)
-    expect(shallow(<Form onSubmit={noop} />).find('form').length).toBe(1)
+    expect(s.find('form').length).toBe(1)
   })
 
   test('should add fields', () => {

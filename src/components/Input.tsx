@@ -1,8 +1,11 @@
 import * as React from 'react'
 import FormField from './FormField'
 
-class Input extends FormField<React.HTMLProps<HTMLInputElement>> {
-  handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+type ElType = HTMLInputElement
+type InputProps = React.HTMLProps<ElType>
+
+export class FormInput extends FormField<InputProps> {
+  handleBlur = (e: React.FocusEvent<ElType>) => {
     const { onBlur, validateOn } = this.props
 
     if (onBlur) {
@@ -14,11 +17,11 @@ class Input extends FormField<React.HTMLProps<HTMLInputElement>> {
     }
   }
 
-  handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { onInput } = this.props
+  handleChange = (e: React.ChangeEvent<ElType>) => {
+    const { onChange } = this.props
 
-    if (onInput) {
-      onInput(e)
+    if (onChange) {
+      onChange(e)
     }
 
     this.setValue(e.target.value)
@@ -31,11 +34,11 @@ class Input extends FormField<React.HTMLProps<HTMLInputElement>> {
       <input
         {...inputProps}
         onBlur={this.handleBlur}
-        onInput={this.handleInput}
+        onChange={this.handleChange}
         value={this.value}
       />
     )
   }
 }
 
-export default Input
+export default FormField.withContext<InputProps>(FormInput)

@@ -1,9 +1,10 @@
 import * as React from 'react'
 
 import { FormContext, IFormContext } from './Form'
-import { TransformFn, ValidateOnOpts } from 'types'
+import { Omit, TransformFn, ValidateOnOpts } from 'types'
 
-interface FormFieldProps {
+export interface FormFieldProps {
+  context: IFormContext
   name: string
 
   transform?: TransformFn
@@ -11,18 +12,25 @@ interface FormFieldProps {
   validateOn?: ValidateOnOpts
 }
 
-abstract class FormField<T> extends React.PureComponent<
-  FormFieldProps & T,
-  {},
-  IFormContext
-> {
-  context: IFormContext
-  contextType = FormContext
+abstract class FormField<T> extends React.PureComponent<FormFieldProps & T> {
+  static withContext<P>(Component: React.ComponentType<FormFieldProps & P>) {
+    return function ContextedComponent(
+      props: Omit<FormFieldProps & P, 'context'>
+    ) {
+      return (
+        <FormContext.Consumer>
+          {ctx => <Component {...props as FormFieldProps & P} context={ctx} />}
+        </FormContext.Consumer>
+      )
+    }
+  }
 
-  componentDidMount() {
-    const { name: key, transform, validate, validateOn } = this.props
+  constructor(props: FormFieldProps & T) {
+    super(props)
 
-    this.context.add({
+    const { context, name: key, transform, validate, validateOn } = props
+
+    context.add({
       key,
       transform,
       validate,
@@ -31,35 +39,36 @@ abstract class FormField<T> extends React.PureComponent<
   }
 
   componentDidUpdate(prevProps: FormFieldProps) {
-    const { name: key, transform, validate, validateOn } = this.props
+    const { context, name: key, transform, validate, validateOn } = this.props
 
     if (transform !== prevProps.transform) {
-      this.context.setTransform(key, transform)
+      context.setTransform(key, transform)
     }
 
     if (validate !== prevProps.validate) {
-      this.context.setValidation(key, validate)
+      context.setValidation(key, validate)
     }
 
     if (validateOn !== prevProps.validateOn) {
-      this.context.setValidateOn(key, validateOn)
+      context.setValidateOn(key, validateOn)
     }
   }
 
   componentWillUnmount() {
-    this.context.remove(this.props.name)
+    this.props.context.remove(this.props.name)
   }
 
   validate() {
-    this.context.validateField(this.props.name)
+    this.props.context.validateField(this.props.name)
   }
 
   setValue(value: string) {
-    this.context.setValue(this.props.name, value)
+    this.props.context.setValue(this.props.name, value)
   }
 
   get value() {
-    return this.context.fields.getField(this.props.name).value
+    const field = this.props.context.fields.getField(this.props.name)
+    return field ? field.value : ''
   }
 }
 

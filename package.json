@@ -9,7 +9,10 @@
     "react": "16.8.1"
   },
   "scripts": {
-    "test": "jest"
+    "format": "prettier --config .prettierrc --write \"src/**/*.tsx\"",
+    "lint": "tslint -c tslint.json -p tsconfig.json",
+    "test": "jest",
+    "quality": "yarn format && yarn lint && yarn test"
   },
   "devDependencies": {
     "@babel/core": "7.2.2",

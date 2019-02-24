@@ -62,7 +62,7 @@ abstract class FormField<T> extends React.PureComponent<FormFieldProps & T> {
     this.props.context.validateField(this.props.name)
   }
 
-  setValue(value: string) {
+  setValue(value: string | string[]) {
     this.props.context.setValue(this.props.name, value)
   }
 

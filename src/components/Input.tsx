@@ -2,9 +2,9 @@ import * as React from 'react'
 import FormField from './FormField'
 
 type ElementType = HTMLInputElement
-type InputProps = React.HTMLProps<ElementType>
+type ElementProps = React.HTMLProps<ElementType>
 
-export class FormInput extends FormField<InputProps> {
+export class FormInput extends FormField<ElementProps> {
   handleBlur = (e: React.FocusEvent<ElementType>) => {
     const { onBlur, validateOn } = this.props
 
@@ -41,4 +41,4 @@ export class FormInput extends FormField<InputProps> {
   }
 }
 
-export default FormField.withContext<InputProps>(FormInput)
+export default FormField.withContext<ElementProps>(FormInput)

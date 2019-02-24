@@ -17,7 +17,7 @@ export interface IFormContext {
   setTransform: (key: string, transform: TransformFn) => void
   setValidateOn: (key: string, validateOn: ValidateOnOpts) => void
   setValidation: (key: string, validate: any) => void
-  setValue: (key: string, value: string) => void
+  setValue: (key: string, value: string | string[]) => void
   validateField: (key: string) => void
 }
 

@@ -2,9 +2,9 @@ import * as React from 'react'
 import FormField from './FormField'
 
 type ElementType = HTMLTextAreaElement
-type TextareaProps = React.HTMLProps<ElementType>
+type ElementProps = React.HTMLProps<ElementType>
 
-export class FormTextarea extends FormField<TextareaProps> {
+export class FormTextarea extends FormField<ElementProps> {
   handleBlur = (e: React.FocusEvent<ElementType>) => {
     const { onBlur, validateOn } = this.props
 
@@ -41,4 +41,4 @@ export class FormTextarea extends FormField<TextareaProps> {
   }
 }
 
-export default FormField.withContext<TextareaProps>(FormTextarea)
+export default FormField.withContext<ElementProps>(FormTextarea)

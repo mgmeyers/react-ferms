@@ -3,20 +3,9 @@ import { mount, shallow } from 'enzyme'
 
 import Form from 'components/Form'
 import Textarea, { FormTextarea } from 'components/Textarea'
-import FormFields from 'data/FormFields'
 
 import { noop } from 'helpers'
-
-const defaultCtx = {
-  add: noop,
-  fields: new FormFields({}),
-  remove: noop,
-  setTransform: noop,
-  setValidateOn: noop,
-  setValidation: noop,
-  setValue: noop,
-  validateField: noop,
-}
+import { defaultCtx } from './common'
 
 describe('<Textarea />', () => {
   test('should mount', () => {

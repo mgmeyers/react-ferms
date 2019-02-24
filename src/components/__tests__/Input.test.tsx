@@ -6,17 +6,7 @@ import Input, { FormInput } from 'components/Input'
 import FormFields from 'data/FormFields'
 
 import { noop } from 'helpers'
-
-const defaultCtx = {
-  add: noop,
-  fields: new FormFields({}),
-  remove: noop,
-  setTransform: noop,
-  setValidateOn: noop,
-  setValidation: noop,
-  setValue: noop,
-  validateField: noop,
-}
+import { defaultCtx } from './common'
 
 describe('<Input />', () => {
   test('should mount', () => {

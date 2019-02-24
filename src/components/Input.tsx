@@ -18,26 +18,52 @@ export class FormInput extends FormField<ElementProps> {
   }
 
   handleChange = (e: React.ChangeEvent<ElementType>) => {
-    const { onChange } = this.props
+    const { onChange, value } = this.props
 
     if (onChange) {
       onChange(e)
     }
 
-    this.setValue(e.target.value)
+    if (this.isCheckbox) {
+      const checked = e.target.checked
+      const currentValue = this.rawValue as string[]
+
+      let nextValue: string[] = []
+
+      nextValue = checked
+        ? [...currentValue, value as string]
+        : currentValue.splice(currentValue.indexOf(value as string), 1)
+
+      this.setValue(nextValue)
+    } else {
+      this.setValue(e.target.value)
+    }
+  }
+
+  get isCheckbox(): boolean {
+    return this.props.type === 'checkbox'
+  }
+
+  get checked(): boolean {
+    return this.value ? this.value.includes(this.props.value as string) : false
   }
 
   render() {
     const { transform, validate, validateOn, ...inputProps } = this.props
 
-    return (
-      <input
-        {...inputProps}
-        onBlur={this.handleBlur}
-        onChange={this.handleChange}
-        value={this.value}
-      />
-    )
+    const props = {
+      ...inputProps,
+      onBlur: this.handleBlur,
+      onChange: this.handleChange,
+    }
+
+    if (this.isCheckbox) {
+      props.checked = this.checked
+    } else {
+      props.value = this.value
+    }
+
+    return <input {...props} />
   }
 }
 

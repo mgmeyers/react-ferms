@@ -28,16 +28,18 @@ export interface FormFieldJSON {
   validationStrategy: ValidationStrategy
 
   errors?: Array<string | JSX.Element>
+  multiple?: boolean
   status?: FormStatus
   transform?: TransformFn
   validate?: any
   validateOn?: ValidateOnOpts
-  value?: string
+  value?: string | string[]
 }
 
 export interface AddFieldOpts {
   key: string
 
+  multiple?: boolean
   transform?: TransformFn
   validate?: any
   validateOn?: ValidateOnOpts

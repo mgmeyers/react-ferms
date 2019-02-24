@@ -68,20 +68,24 @@ export default class FormField {
     return this.field.validationStrategy
   }
 
-  get value(): string {
+  get value(): string | string[] {
     const transform = this.field.transform || noop
-    return transform(this.field.value || '')
+    return transform(this.field.value || this.emptyValue)
   }
 
-  get rawValue(): string {
-    return this.field.value || ''
+  get rawValue(): string | string[] {
+    return this.field.value || this.emptyValue
+  }
+
+  get emptyValue(): string | string[] {
+    return this.field.multiple ? [] : ''
   }
 
   setKey(value: string): FormField {
     return this.update('key', value)
   }
 
-  setValue(value: string): FormField {
+  setValue(value: string | string[]): FormField {
     let updatedField = this.update('value', value)
 
     if (this.validateOn === 'change') {

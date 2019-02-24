@@ -130,6 +130,34 @@ describe('<Input />', () => {
     expect(i.value).toBe('testValue')
   })
 
+  test('gets field raw value', () => {
+    const fields = new FormFields({}).add({
+      key: 'test',
+      transform: (v: string) => v.toUpperCase(),
+      value: 'testValue',
+    })
+
+    let s = shallow(
+      <FormInput
+        name="test"
+        context={{
+          ...defaultCtx,
+          fields,
+        }}
+      />
+    )
+
+    let i = s.instance() as FormInput
+
+    expect(i.rawValue).toBe('testValue')
+
+    s = shallow(<FormInput name="test" context={defaultCtx} />)
+
+    i = s.instance() as FormInput
+
+    expect(i.rawValue).toBe('')
+  })
+
   test('handles blur event', () => {
     const mock = jest.fn()
     const onBlur = jest.fn()
@@ -177,6 +205,65 @@ describe('<Input />', () => {
 
     expect(mock).toHaveBeenCalledWith('test', 'hi')
     expect(onChange).toHaveBeenCalled()
+  })
+
+  test('handles checkbox inputs', () => {
+    const onSubmit = jest.fn()
+
+    const s = mount(
+      <Form onSubmit={onSubmit}>
+        <Input name="test" type="checkbox" value="one" />
+        <Input name="test" type="checkbox" value="two" />
+      </Form>
+    )
+
+    s.find('input')
+      .first()
+      .simulate('change', {
+        target: { value: 'one', checked: true },
+      })
+
+    s.find('form').simulate('submit')
+
+    expect(onSubmit).toHaveBeenCalledWith({
+      test: ['one'],
+    })
+
+    s.find('input')
+      .last()
+      .simulate('change', {
+        target: { value: 'two', checked: true },
+      })
+
+    s.find('form').simulate('submit')
+
+    expect(onSubmit).toHaveBeenCalledWith({
+      test: ['one', 'two'],
+    })
+
+    s.find('input')
+      .first()
+      .simulate('change', {
+        target: { value: 'one', checked: false },
+      })
+
+    s.find('form').simulate('submit')
+
+    expect(onSubmit).toHaveBeenCalledWith({
+      test: ['two'],
+    })
+
+    s.find('input')
+      .last()
+      .simulate('change', {
+        target: { value: 'two', checked: false },
+      })
+
+    s.find('form').simulate('submit')
+
+    expect(onSubmit).toHaveBeenCalledWith({
+      test: [],
+    })
   })
 
   test('returns correct value on form submit', () => {

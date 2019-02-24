@@ -7,7 +7,9 @@ export interface FormFieldProps {
   context: IFormContext
   name: string
 
+  multiple?: boolean
   transform?: TransformFn
+  type?: string
   validate?: any
   validateOn?: ValidateOnOpts
 }
@@ -28,10 +30,19 @@ abstract class FormField<T> extends React.PureComponent<FormFieldProps & T> {
   constructor(props: FormFieldProps & T) {
     super(props)
 
-    const { context, name: key, transform, validate, validateOn } = props
+    const {
+      context,
+      multiple,
+      name: key,
+      transform,
+      type,
+      validate,
+      validateOn,
+    } = props
 
     context.add({
       key,
+      multiple: multiple || type === 'checkbox',
       transform,
       validate,
       validateOn,
@@ -69,6 +80,11 @@ abstract class FormField<T> extends React.PureComponent<FormFieldProps & T> {
   get value() {
     const field = this.props.context.fields.getField(this.props.name)
     return field ? field.value : ''
+  }
+
+  get rawValue() {
+    const field = this.props.context.fields.getField(this.props.name)
+    return field ? field.rawValue : ''
   }
 }
 

@@ -34,12 +34,17 @@ export default class FormFields {
   }
 
   add(opts: AddFieldOpts): FormFields {
+    if (opts.multiple && this.getField(opts.key) !== undefined) {
+      return this
+    }
+
     const status = !opts.value ? FormStatus.PRISTINE : FormStatus.DIRTY
     const globalOpts = this.options
 
     const field = new FormField({
       defaultValidateOn: globalOpts.validateOn,
       key: opts.key,
+      multiple: opts.multiple,
       status,
       transform: opts.transform,
       validate: opts.validate,

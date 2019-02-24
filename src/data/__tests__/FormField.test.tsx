@@ -38,6 +38,15 @@ describe('class FormField', () => {
     expect(f.value).toBe('')
     expect(f.rawValue).toBe('')
     expect(f.validate().valid).toBe(true)
+
+    f = new FormField({
+      defaultValidateOn: 'submit',
+      key: 'wow',
+      multiple: true,
+      validationStrategy: defaultValidationStrat,
+    })
+
+    expect(f.rawValue).toEqual([])
   })
 
   test('sets key', () => {

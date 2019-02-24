@@ -44,6 +44,14 @@ describe('class FormFields', () => {
     expect(u.status).toBe(FormStatus.DIRTY)
   })
 
+  test('only adds multi fields once', () => {
+    const f = new FormFields({})
+    const a = f.add({ key: 'a', multiple: true })
+    const b = a.add({ key: 'a', multiple: true })
+
+    expect(a).toBe(b)
+  })
+
   test('removes fields', () => {
     const f = new FormFields({})
     let u = f.add({ key: 'a.b' }).add({ key: 'a.c' })

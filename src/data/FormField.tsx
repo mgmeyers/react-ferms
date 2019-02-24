@@ -4,16 +4,12 @@ import { alwaysValid, noop } from 'helpers'
 
 import {
   FormFieldJSON,
+  FormFieldValidation,
   FormStatus,
   TransformFn,
   ValidateOnOpts,
   ValidationStrategy,
 } from 'types'
-
-export interface FormFieldValidation {
-  field: FormField
-  valid: boolean
-}
 
 export default class FormField {
   private field: FormFieldJSON

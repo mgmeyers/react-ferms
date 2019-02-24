@@ -1,4 +1,5 @@
 import FormField from 'data/FormField'
+import FormFields from 'data/FormFields'
 
 export interface MapStringAny {
   [key: string]: any
@@ -34,6 +35,16 @@ export interface FormFieldJSON {
   validate?: any
   validateOn?: ValidateOnOpts
   value?: string | string[]
+}
+
+export interface FormFieldValidation {
+  field: FormField
+  valid: boolean
+}
+
+export interface FormFieldsValidation {
+  fields: FormFields
+  valid: boolean
 }
 
 export interface AddFieldOpts {

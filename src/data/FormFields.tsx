@@ -7,6 +7,7 @@ import defaultValidationStrat from 'validation-strategies/default'
 import {
   AddFieldOpts,
   FormFieldsOptions,
+  FormFieldsValidation,
   FormStatus,
   MapStringAny,
   MapStringFormField,
@@ -15,11 +16,6 @@ import {
   ValidationResults,
   ValidationStrategy,
 } from 'types'
-
-export interface FormFieldsValidation {
-  fields: FormFields
-  valid: boolean
-}
 
 export default class FormFields {
   private options: FormFieldsOptions

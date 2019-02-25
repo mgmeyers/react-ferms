@@ -54,6 +54,7 @@ export class FormSelect extends FormField<ElementProps> {
   render() {
     const {
       children,
+      context,
       transform,
       validate,
       validateOn,

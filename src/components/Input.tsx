@@ -49,7 +49,13 @@ export class FormInput extends FormField<ElementProps> {
   }
 
   render() {
-    const { transform, validate, validateOn, ...inputProps } = this.props
+    const {
+      context,
+      transform,
+      validate,
+      validateOn,
+      ...inputProps
+    } = this.props
 
     const props = {
       ...inputProps,

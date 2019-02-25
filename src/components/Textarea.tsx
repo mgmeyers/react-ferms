@@ -28,7 +28,13 @@ export class FormTextarea extends FormField<ElementProps> {
   }
 
   render() {
-    const { transform, validate, validateOn, ...inputProps } = this.props
+    const {
+      context,
+      transform,
+      validate,
+      validateOn,
+      ...inputProps
+    } = this.props
 
     return (
       <textarea

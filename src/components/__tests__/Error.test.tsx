@@ -1,9 +1,9 @@
 import { mount } from 'enzyme'
 import * as React from 'react'
 
+import Error, { renderError } from 'components/Error'
 import Form from 'components/Form'
 import Textarea from 'components/Textarea'
-import Value, { renderValue } from 'components/Value'
 
 import FormField from 'data/FormField'
 
@@ -12,20 +12,23 @@ import { defaultFieldOpts } from './common'
 
 import { FormStatus } from 'types'
 
-describe('<Value />', () => {
+describe('<Error />', () => {
   test('renders field values', () => {
     const s = mount(
       <Form onSubmit={noop}>
         <Textarea name="test" />
-        <Textarea name="test2" validate={() => 'nope'} validateOn="change" />
+        <Textarea
+          name="test2"
+          validate={() => {
+            return ['nope', 'not even']
+          }}
+          validateOn="change"
+        />
         <div>
-          <Value name="test" />
+          <Error name="test" />
         </div>
-        <div>
-          <Value
-            name={['test', 'test2']}
-            render={(vals, stats) => vals.toString() + stats.toString()}
-          />
+        <div className="multi">
+          <Error name="test2" />
         </div>
       </Form>
     )
@@ -43,39 +46,27 @@ describe('<Value />', () => {
         .find('div')
         .first()
         .text()
-    ).toBe('hi')
-    expect(
-      s
-        .find('div')
-        .last()
-        .text()
-    ).toBe('hi,hey1,2')
+    ).toBe('')
+
+    const multi = s.find('.multi div')
+
+    expect(multi.length).toBe(2)
+    expect(multi.first().text()).toBe('nope')
+    expect(multi.last().text()).toBe('not even')
   })
 
   test('calls render function with compiled values', () => {
     const f = new FormField({
       ...defaultFieldOpts,
+      errors: ['whoops'],
       status: FormStatus.DIRTY,
       value: 'hi',
     })
 
-    const f2 = new FormField({
-      ...defaultFieldOpts,
-      status: FormStatus.INVALID,
-      value: 'nope',
-    })
-
     const mock = jest.fn()
 
-    renderValue(mock, f)
+    renderError(mock, f)
 
-    expect(mock).toHaveBeenCalledWith('hi', FormStatus.DIRTY)
-
-    renderValue(mock, [f, f2])
-
-    expect(mock).toHaveBeenCalledWith(
-      ['hi', 'nope'],
-      [FormStatus.DIRTY, FormStatus.INVALID]
-    )
+    expect(mock).toHaveBeenCalledWith(['whoops'])
   })
 })

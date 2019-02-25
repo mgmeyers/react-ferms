@@ -49,7 +49,7 @@ function getField(name: string | string[], fields: FormFields) {
   return fields.getField(name)
 }
 
-export function renderValue(field: FormField | FormField[], render: RenderFn) {
+export function renderValue(render: RenderFn, field: FormField | FormField[]) {
   const data = getFieldVals(field)
   return render ? render(data.value, data.status) : `${data.value}`
 }
@@ -59,7 +59,7 @@ export default function Value(props: ValueProps) {
     <FormContext.Consumer>
       {context => {
         const field = getField(props.name, context.fields)
-        return renderValue(field, props.render)
+        return renderValue(props.render, field)
       }}
     </FormContext.Consumer>
   )

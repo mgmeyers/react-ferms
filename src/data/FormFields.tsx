@@ -1,4 +1,5 @@
 import * as prop from 'prop-ops'
+
 import FormField from 'data/FormField'
 
 import { sanitizeKey } from 'helpers'

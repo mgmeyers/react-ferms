@@ -6,3 +6,6 @@ TODO:
 * Err
 * Additional strategies
 * Async validation
+* Add rollup build
+* Documentation
+* ComponentShouldUpdate

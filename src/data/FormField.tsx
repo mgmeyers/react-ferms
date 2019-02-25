@@ -84,6 +84,10 @@ export default class FormField {
   setValue(value: string | string[]): FormField {
     let updatedField = this.update('value', value)
 
+    if (this.status === FormStatus.PRISTINE) {
+      updatedField = updatedField.update('status', FormStatus.DIRTY)
+    }
+
     if (this.validateOn === 'change') {
       updatedField = updatedField.validate().field
     }

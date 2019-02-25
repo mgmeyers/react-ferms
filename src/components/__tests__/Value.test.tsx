@@ -1,9 +1,9 @@
-import * as React from 'react'
 import { mount } from 'enzyme'
+import * as React from 'react'
 
 import Form from 'components/Form'
-import Value, { renderValue } from 'components/Value'
 import Textarea from 'components/Textarea'
+import Value, { renderValue } from 'components/Value'
 
 import FormField from 'data/FormField'
 

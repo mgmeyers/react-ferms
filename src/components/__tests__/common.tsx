@@ -1,6 +1,7 @@
 import FormFields from 'data/FormFields'
-import { noop } from 'helpers'
 import defaultStrat from 'validation-strategies/default'
+
+import { noop } from 'helpers'
 import { FormFieldJSON } from 'types'
 
 export const defaultCtx = {

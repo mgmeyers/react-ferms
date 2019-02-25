@@ -1,8 +1,9 @@
-import * as React from 'react'
 import { mount, shallow } from 'enzyme'
+import * as React from 'react'
 
 import Form from 'components/Form'
 import Input, { FormInput } from 'components/Input'
+
 import FormFields from 'data/FormFields'
 
 import { noop } from 'helpers'

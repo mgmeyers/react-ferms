@@ -15,7 +15,6 @@
     "no-return-assign": ["error", "always"],
     "no-trailing-whitespace": false,
     "no-var-keyword": true,
-    "ordered-imports": false,
     "prefer-const": { "severity": "warn" },
     "prefer-template": { "severity": "warn" },
     "quotemark": [true, "single", "jsx-double"],

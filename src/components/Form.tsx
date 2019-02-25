@@ -1,10 +1,10 @@
-import * as React from 'react'
 import * as prop from 'prop-ops'
+import * as React from 'react'
 
 import FormFields from 'data/FormFields'
 import { noop } from 'helpers'
 
-import { AddFieldOpts, FormProps, ValidateOnOpts, TransformFn } from 'types'
+import { AddFieldOpts, FormProps, TransformFn, ValidateOnOpts } from 'types'
 
 interface FormState {
   fields: FormFields

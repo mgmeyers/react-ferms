@@ -1,4 +1,6 @@
-# react-ferms
+# Peasy Form
+
+`npm install react-peasy-form`
 
 ## `<Form />`
 

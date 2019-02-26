@@ -4,21 +4,16 @@ import * as React from 'react'
 import FormFields from 'data/FormFields'
 import { noop } from 'helpers'
 
-import { AddFieldOpts, FormProps, TransformFn, ValidateOnOpts } from 'types'
+import {
+  AddFieldOpts,
+  FormProps,
+  IFormContext,
+  TransformFn,
+  ValidateOnOpts,
+} from 'types'
 
 interface FormState {
   fields: FormFields
-}
-
-export interface IFormContext {
-  add: (field: AddFieldOpts) => void
-  fields: FormFields
-  remove: (key: string) => void
-  setTransform: (key: string, transform: TransformFn) => void
-  setValidateOn: (key: string, validateOn: ValidateOnOpts) => void
-  setValidation: (key: string, validate: any) => void
-  setValue: (key: string, value: string | string[]) => void
-  validateField: (key: string) => void
 }
 
 export const FormContext = React.createContext<IFormContext>({

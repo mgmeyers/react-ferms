@@ -55,6 +55,48 @@ export interface FormProps {
   onError?(errors: { [key: string]: ValidationResults }): void
 }
 
+export interface FormFieldProps {
+  context: IFormContext
+
+  /**
+   * The key associated with a form field's value. Supports nested objects through
+   * dot notation.
+   */
+  name: string
+  multiple?: boolean
+
+  /**
+   * A Function used to transform a fields raw text value.
+   * `(value: any) => any`
+   */
+  transform?: TransformFn
+  type?: string
+
+  /**
+   * A function used to validate a field's value. The function signature when
+   * using the default validation strategy is
+   * `(value: any) => true | Array<string | Error | JSX.Element>`
+   */
+  validate?: any
+
+  /**
+   * Override the form's default `validateOn`. Available options are:
+   * `submit | blur | change`
+   */
+  validateOn?: ValidateOnOpts
+}
+
+export interface IFormContext {
+  add: (field: AddFieldOpts) => void
+  fields: FormFields
+  remove: (key: string) => void
+  setTransform: (key: string, transform: TransformFn) => void
+  setValidateOn: (key: string, validateOn: ValidateOnOpts) => void
+  setValidation: (key: string, validate: any) => void
+  setValue: (key: string, value: string | string[]) => void
+  validateField: (key: string) => void
+}
+
 export interface MapStringAny {
   [key: string]: any
 }

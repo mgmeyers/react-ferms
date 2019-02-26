@@ -1,6 +1,60 @@
 import FormField from 'data/FormField'
 import FormFields from 'data/FormFields'
 
+export interface FormProps {
+  /**
+   * Default form values in the form of key/value pairs where the key is a form
+   * field name, and the value is the form field value. Values in nested objects
+   * can be accessed through dot notation.
+   *
+   * @example
+   * <Form
+   *   defaults={{ title: 'hello', name: { first: 'John', last: 'Doe'  } }}
+   *   onSubmit={values => console.log(values)}
+   * >
+   *   <Input name="title" type="text" />
+   *   <Input name="name.first" type="text" />
+   *   <Input name="name.last" type="text" />
+   *
+   *   <button type="submit">Submit</button>
+   * </Form>
+   */
+  defaults?: MapStringAny
+
+  /**
+   * The default setting describing when to trigger field validation. This can
+   * be overridden on a per-field basis
+   */
+  validateOn?: ValidateOnOpts
+
+  /**
+   * Applies a field validation to a field value. This can be
+   * used to support various third party validation libraries.
+   *
+   * A validation strategy has the signature:
+   * ```
+   * (value: any, validation: any) => true | Array<string | Error | JSX.Element>
+   * ```
+   */
+  validationStrategy?: ValidationStrategy
+
+  /**
+   * Executed when the form is submitted. onSubmit gets passed an object mapping
+   * field names to transformed field values
+   */
+  onSubmit(values: MapStringAny): void
+
+  /**
+   * Executed before a form's onSubmit validation occurs.
+   */
+  preValidate?(): void
+
+  /**
+   * Executed when a form's onSubmit validation fails
+   */
+  onError?(errors: { [key: string]: ValidationResults }): void
+}
+
 export interface MapStringAny {
   [key: string]: any
 }
@@ -10,8 +64,11 @@ export interface MapStringFormField {
 }
 
 export type TransformFn = (value: any) => any
+
 export type ValidateOnOpts = 'change' | 'blur' | 'submit'
+
 export type ValidationResults = true | Array<string | Error | JSX.Element>
+
 export type ValidationStrategy = (
   value: any,
   validation: any
@@ -62,17 +119,6 @@ export interface FormFieldsOptions {
   fields?: MapStringFormField
   validateOn?: ValidateOnOpts
   validationStrategy?: ValidationStrategy
-}
-
-export interface FormProps {
-  defaults?: object
-  validateOn?: ValidateOnOpts
-  validationStrategy?: ValidationStrategy
-
-  onSubmit(values: object): void
-
-  preValidate?(): void
-  onError?(errors: { [key: string]: ValidationResults }): void
 }
 
 export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>

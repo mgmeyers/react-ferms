@@ -6,12 +6,32 @@ import { Omit, TransformFn, ValidateOnOpts } from 'types'
 
 export interface FormFieldProps {
   context: IFormContext
-  name: string
 
+  /**
+   * The key associated with a form field's value. Supports nested objects through
+   * dot notation.
+   */
+  name: string
   multiple?: boolean
+
+  /**
+   * A Function used to transform a fields raw text value.
+   * `(value: any) => any`
+   */
   transform?: TransformFn
   type?: string
+
+  /**
+   * A function used to validate a field's value. The function signature when
+   * using the default validation strategy is
+   * `(value: any) => true | Array<string | Error | JSX.Element>`
+   */
   validate?: any
+
+  /**
+   * Override the form's default `validateOn`. Available options are:
+   * `submit | blur | change`
+   */
   validateOn?: ValidateOnOpts
 }
 

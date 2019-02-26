@@ -1,7 +1,7 @@
 import { mount } from 'enzyme'
 import * as React from 'react'
 
-import Error, { renderError } from 'components/Error'
+import Err, { renderError } from 'components/Err'
 import Form from 'components/Form'
 import Textarea from 'components/Textarea'
 
@@ -20,15 +20,15 @@ describe('<Error />', () => {
         <Textarea
           name="test2"
           validate={() => {
-            return ['nope', 'not even']
+            return ['nope', new Error('what'), <span>not even</span>]
           }}
           validateOn="change"
         />
         <div>
-          <Error name="test" />
+          <Err name="test" />
         </div>
         <div className="multi">
-          <Error name="test2" />
+          <Err name="test2" />
         </div>
       </Form>
     )
@@ -50,9 +50,10 @@ describe('<Error />', () => {
 
     const multi = s.find('.multi div')
 
-    expect(multi.length).toBe(2)
-    expect(multi.first().text()).toBe('nope')
-    expect(multi.last().text()).toBe('not even')
+    expect(multi.length).toBe(3)
+    expect(multi.at(0).text()).toBe('nope')
+    expect(multi.at(1).text()).toBe('what')
+    expect(multi.at(2).html()).toBe('<div><span>not even</span></div>')
   })
 
   test('calls render function with compiled values', () => {

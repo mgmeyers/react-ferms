@@ -73,27 +73,27 @@ The base form component and context provider for all enclosed form fields.
 
 ### Props
 
-`defaults?: { [key: string]: any }`
+#### `defaults?: { [key: string]: any }`
 
 Default form values in the form of key/value pairs where the key is a form field name, and the value is the form field value. Values in nested objects can be accessed through dot notation.
 
-`validateOn?: 'change' | 'blur' | 'submit'`
+#### `validateOn?: 'change' | 'blur' | 'submit'`
 
 The default setting describing when to trigger field validation. This can be overridden on a per-field basis
 
-`validationStrategy?: (value: any, validation: any) => true | Array<string | Error | JSX.Element>`
+#### `validationStrategy?: (value: any, validation: any) => true | Array<string | Error | JSX.Element>`
 
 Applies a field validation to a field value. This can be used to support various third party validation libraries.
 
-`onSubmit(values: { [key: string]: any }): void`
+#### `onSubmit(values: { [key: string]: any }): void`
 
 Executed when the form is submitted. `onSubmit` gets passed an object mapping field names to transformed field values. Nested values are supported through dot notation.
 
-`preValidate?(): void`
+#### `preValidate?(): void`
 
 Executed before a form's onSubmit validation occurs.
 
-`onError?(errors: { [key: string]: true | Array<string | Error | JSX.Element> }): void`
+#### `onError?(errors: { [key: string]: Array<string | Error | JSX.Element> }): void`
 
 Executed when a form's onSubmit validation fails
 
@@ -104,40 +104,43 @@ Executed when a form's onSubmit validation fails
 
 * `<Input />`
 * `<Select />`
-* `<TextArea />`
+* `<Textarea />`
 
 ### Props
 
 Each field supports all the props of the field it is shadowing, plus:
 
-`name: string`
+#### `name: string`
 
 The key associated with a form field's value. Supports nested objects through dot notation.
 
-`transform?: (value: any) => any`
+#### `transform?: (value: any) => any`
 
 Used to transform a fields before validation occurs. The transformed value is returned by `onSubmit`
 
-`validate?: any`
+#### `validate?: any`
 
 A function used to validate a field's value. The function signature when using the default validation strategy is `(value: any) => true | Array<string | Error | JSX.Element>`
 
-`validateOn?: submit | blur | change`
+#### `validateOn?: 'submit' | 'blur' | 'change'`
 
 Override the form's default `validateOn`
 
+---
 
 ## `<Value />`
 
 Outputs the transformed value of a form field.
 
-`name: string | string[]`
+### Props
+
+#### `name: string | string[]`
 
 The field name or names to render
 
-`render?: (value: any | any[], status: FormStatus | FormStatus[]) => React.ReactNode`
+#### `render?: (value: any | any[], status: FormStatus | FormStatus[]) => React.ReactNode`
 
-```
+```typescript
 enum FormStatus {
   PRISTINE,
   DIRTY,
@@ -145,21 +148,23 @@ enum FormStatus {
 }
 ```
 
-## `<Error />`
+---
+
+## `<Err />`
 
 Outputs any errors associated with a field.
 
-* `name: string`
+### Props
+#### `name: string`
 
 The desired field's name
 
-* `render?: (errors: Array<string | JSX.Element>) => React.ReactNode`
+#### `render?: (errors: Array<string | Error | JSX.Element>) => React.ReactNode`
 
-
+---
 
 ## TODO:
 
-* test jsx errors, test Error errors
 * Add rollup build
 * ComponentShouldUpdate
 * Async validation

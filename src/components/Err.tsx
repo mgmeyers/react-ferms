@@ -4,7 +4,7 @@ import FormField from 'data/FormField'
 
 import { FormContext } from './Form'
 
-type RenderFn = (errors: Array<string | JSX.Element>) => React.ReactNode
+type RenderFn = (errors: Array<string | Error | JSX.Element>) => React.ReactNode
 
 export interface ErrorProps {
   name: string
@@ -16,10 +16,14 @@ export function renderError(render: RenderFn, field: FormField) {
 
   const errors = field.errors
 
-  return render ? render(errors) : errors.map((e, i) => <div key={i}>{e}</div>)
+  return render
+    ? render(errors)
+    : errors.map((e, i) => (
+        <div key={i}>{e instanceof Error ? e.message : e}</div>
+      ))
 }
 
-export default function Error(props: ErrorProps) {
+export default function Err(props: ErrorProps) {
   return (
     <FormContext.Consumer>
       {context => {

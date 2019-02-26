@@ -4,7 +4,7 @@
 
 The base form component and context provider for all enclosed form fields.
 
-```tsx
+```jsx
 <Form
     defaults={{ 
         title: 'hello', 

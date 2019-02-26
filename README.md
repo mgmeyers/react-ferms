@@ -13,7 +13,7 @@ The base form component and context provider for all enclosed form fields.
     onSubmit={values => console.log(values)}
 >
     <div>
-        <h2>Inputs<h2>
+        <h2>Inputs</h2>
 
         <Input 
             name="title" 
@@ -43,7 +43,7 @@ The base form component and context provider for all enclosed form fields.
     </div>
 
     <div>
-        <h2>Values<h2>
+        <h2>Values</h2>
         <ul>
             <li><Value name="title" /></li>
             <li>
@@ -63,7 +63,7 @@ The base form component and context provider for all enclosed form fields.
     </div>
 
     <div>
-        <h2>Errors<h2>
+        <h2>Errors</h2>
         <Error name="name.first" />
     </div>
 

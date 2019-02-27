@@ -1,11 +1,10 @@
-import { mount, shallow } from 'enzyme'
+import { mount } from 'enzyme'
 import * as React from 'react'
 
 import Form from 'components/Form'
-import Textarea, { FormTextarea } from 'components/Textarea'
+import Textarea from 'components/Textarea'
 
 import { noop } from 'helpers'
-import { defaultCtx } from './common'
 
 describe('<Textarea />', () => {
   test('should mount', () => {
@@ -19,51 +18,48 @@ describe('<Textarea />', () => {
   })
 
   test('handles blur event', () => {
-    const mock = jest.fn()
+    const mock = jest.fn(() => true)
     const onBlur = jest.fn()
 
-    const s = shallow(
-      <FormTextarea
-        onBlur={onBlur}
-        name="test"
-        context={{
-          ...defaultCtx,
-          validateField: mock,
-        }}
-      />
-    )
+    const TestComp = (p: { validateOn: 'submit' | 'blur' }) => {
+      return (
+        <Form defaults={{ test: 'hi' }} onSubmit={noop}>
+          <Textarea
+            name="test"
+            onBlur={onBlur}
+            validate={mock}
+            validateOn={p.validateOn}
+          />
+        </Form>
+      )
+    }
 
-    const i = s.instance() as FormTextarea
+    const s = mount(<TestComp validateOn="submit" />)
 
-    s.simulate('blur')
+    s.find('textarea').simulate('blur')
 
     expect(mock).not.toHaveBeenCalled()
     expect(onBlur).toHaveBeenCalled()
 
     s.setProps({ validateOn: 'blur' })
-    s.simulate('blur')
+    s.find('textarea').simulate('blur')
 
-    expect(mock).toHaveBeenCalledWith('test')
+    expect(mock).toHaveBeenCalledWith('hi')
   })
 
   test('handles change event', () => {
-    const mock = jest.fn()
+    const mock = jest.fn(v => true)
     const onChange = jest.fn()
 
-    const s = shallow(
-      <FormTextarea
-        onChange={onChange}
-        name="test"
-        context={{
-          ...defaultCtx,
-          setValue: mock,
-        }}
-      />
+    const s = mount(
+      <Form onSubmit={noop} validateOn="change">
+        <Textarea name="test" onChange={onChange} validate={mock} />
+      </Form>
     )
 
-    s.simulate('change', { target: { value: 'hi' } })
+    s.find('textarea').simulate('change', { target: { value: 'hi' } })
 
-    expect(mock).toHaveBeenCalledWith('test', 'hi')
+    expect(mock).toHaveBeenCalledWith('hi')
     expect(onChange).toHaveBeenCalled()
   })
 

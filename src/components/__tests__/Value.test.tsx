@@ -24,7 +24,7 @@ describe('<Value />', () => {
         <div>
           <Value
             name={['test', 'test2']}
-            render={(vals, stats) => vals.toString() + stats.toString()}
+            render={(vals, stats) => <>{vals.toString() + stats.toString()}</>}
           />
         </div>
       </Form>
@@ -44,6 +44,7 @@ describe('<Value />', () => {
         .first()
         .text()
     ).toBe('hi')
+
     expect(
       s
         .find('div')
@@ -67,7 +68,7 @@ describe('<Value />', () => {
 
     const mock = jest.fn()
 
-    renderValue(mock, f)
+    renderValue(mock, [f])
 
     expect(mock).toHaveBeenCalledWith('hi', FormStatus.DIRTY)
 

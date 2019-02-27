@@ -10,7 +10,7 @@ import { FormStatus } from 'types'
 type RenderFn = (
   value: any | any[],
   status: FormStatus | FormStatus[]
-) => React.ReactNode
+) => JSX.Element
 
 export interface ValueProps {
   name: string | string[]
@@ -27,18 +27,11 @@ function fieldValueReducer(
   return data
 }
 
-function getFieldVals(field: FormField | FormField[]) {
-  if (!Array.isArray(field)) {
-    return {
-      status: field ? field.status : FormStatus.INVALID,
-      value: field ? field.value : '',
-    }
-  } else {
-    return field.reduce(fieldValueReducer, {
-      status: [],
-      value: [],
-    })
-  }
+function getFieldVals(fields: FormField[]) {
+  return fields.reduce(fieldValueReducer, {
+    status: [],
+    value: [],
+  })
 }
 
 function getField(name: string | string[], fields: FormFields) {
@@ -46,21 +39,29 @@ function getField(name: string | string[], fields: FormFields) {
     return name.map(n => fields.getField(n))
   }
 
-  return fields.getField(name)
+  return [fields.getField(name)]
 }
 
-export function renderValue(render: RenderFn, field: FormField | FormField[]) {
-  const data = getFieldVals(field)
-  return render ? render(data.value, data.status) : `${data.value}`
+function unwrap(v: any[]): any {
+  if (v.length === 1) return v[0]
+  return v
+}
+
+export function renderValue(
+  render: RenderFn,
+  fields: FormField[]
+): JSX.Element {
+  const { value, status } = getFieldVals(fields)
+  return render ? render(unwrap(value), unwrap(status)) : <>{value}</>
 }
 
 export default function Value(props: ValueProps) {
-  return (
-    <FormContext.Consumer>
-      {context => {
-        const field = getField(props.name, context.fields)
-        return renderValue(props.render, field)
-      }}
-    </FormContext.Consumer>
-  )
+  const { name, render } = props
+  const fields = getField(name, React.useContext(FormContext).fields)
+
+  return React.useMemo(() => renderValue(render, fields), [
+    name,
+    render,
+    ...fields,
+  ]) as JSX.Element
 }

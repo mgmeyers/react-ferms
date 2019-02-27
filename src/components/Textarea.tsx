@@ -1,50 +1,53 @@
 import * as React from 'react'
-import FormField from './FormField'
+import { useFormContext } from './FormField'
+
+import { FormFieldProps, IFormContext } from 'types'
 
 type ElementType = HTMLTextAreaElement
 type ElementProps = React.HTMLProps<ElementType>
+type Props = FormFieldProps & ElementProps
 
-export class FormTextarea extends FormField<ElementProps> {
-  handleBlur = (e: React.FocusEvent<ElementType>) => {
-    const { onBlur, validateOn } = this.props
+function useHandlers(props: Props, context: IFormContext) {
+  const { name, onBlur, onChange, validateOn } = props
 
-    if (onBlur) {
-      onBlur(e)
-    }
+  return React.useMemo(
+    () => ({
+      handleBlur: (e: React.FocusEvent<ElementType>) => {
+        if (onBlur) {
+          onBlur(e)
+        }
 
-    if (validateOn === 'blur') {
-      this.validate()
-    }
-  }
+        if (validateOn === 'blur') {
+          context.validateField(name)
+        }
+      },
 
-  handleChange = (e: React.ChangeEvent<ElementType>) => {
-    const { onChange } = this.props
+      handleChange: (e: React.ChangeEvent<ElementType>) => {
+        if (onChange) {
+          onChange(e)
+        }
 
-    if (onChange) {
-      onChange(e)
-    }
-
-    this.setValue(e.target.value)
-  }
-
-  render() {
-    const {
-      context,
-      transform,
-      validate,
-      validateOn,
-      ...inputProps
-    } = this.props
-
-    return (
-      <textarea
-        {...inputProps}
-        onBlur={this.handleBlur}
-        onChange={this.handleChange}
-        value={this.value}
-      />
-    )
-  }
+        context.setValue(name, e.target.value)
+      },
+    }),
+    [name, validateOn, onBlur, onChange]
+  )
 }
 
-export default FormField.withContext<ElementProps>(FormTextarea)
+export default function Textarea(props: Props) {
+  const context = useFormContext<ElementProps>(props)
+  const handlers = useHandlers(props, context)
+
+  const field = context.fields.getField(props.name)
+
+  const { transform, validate, validateOn, ...inputProps } = props
+
+  return (
+    <textarea
+      {...inputProps}
+      onBlur={handlers.handleBlur}
+      onChange={handlers.handleChange}
+      value={field ? field.value : ''}
+    />
+  )
+}

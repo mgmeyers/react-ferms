@@ -56,8 +56,6 @@ export interface FormProps {
 }
 
 export interface FormFieldProps {
-  context: IFormContext
-
   /**
    * The key associated with a form field's value. Supports nested objects through
    * dot notation.

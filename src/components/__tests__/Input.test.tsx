@@ -1,13 +1,15 @@
-import { mount, shallow } from 'enzyme'
+import { mount } from 'enzyme'
 import * as React from 'react'
 
 import Form from 'components/Form'
-import Input, { FormInput } from 'components/Input'
+import Input from 'components/Input'
 
 import FormFields from 'data/FormFields'
 
 import { noop } from 'helpers'
 import { defaultCtx } from './common'
+
+import { TransformFn, ValidateOnOpts } from 'types'
 
 describe('<Input />', () => {
   test('should mount', () => {
@@ -21,190 +23,139 @@ describe('<Input />', () => {
   })
 
   test('should respond to prop updates', () => {
-    const transMock = jest.fn()
-    const validateMock = jest.fn()
-    const validateOnMock = jest.fn()
+    const transMock = jest.fn((v: string) => v + v)
+    const validateMock = jest.fn(() => true)
 
-    const s = shallow(
-      <FormInput
-        name="test"
-        context={{
-          ...defaultCtx,
-          setTransform: transMock,
-          setValidateOn: validateOnMock,
-          setValidation: validateMock,
-        }}
-      />
-    )
+    const TestComp = (p: {
+      transform?: TransformFn
+      validate?: any
+      validateOn?: ValidateOnOpts
+    }) => {
+      return (
+        <Form defaults={{ test: 'hi' }} onSubmit={noop}>
+          <Input name="test" {...p} />
+        </Form>
+      )
+    }
 
-    const t = () => 0
-    const v = () => 0
-    const vo = () => 0
+    const s = mount(<TestComp />)
 
-    s.setProps({ transform: t })
-    s.setProps({ validate: v })
-    s.setProps({ validateOn: vo })
+    s.setProps({
+      transform: transMock,
+      validate: validateMock,
+      validateOn: 'change',
+    })
 
-    expect(transMock).toHaveBeenCalledTimes(1)
-    expect(transMock).toHaveBeenCalledWith('test', t)
-
-    expect(validateMock).toHaveBeenCalledTimes(1)
-    expect(validateMock).toHaveBeenCalledWith('test', v)
-
-    expect(validateOnMock).toHaveBeenCalledTimes(1)
-    expect(validateOnMock).toHaveBeenCalledWith('test', vo)
+    s.find('input').simulate('change', { target: { value: 'hi' } })
+    expect(transMock).toHaveBeenCalledWith('hi')
+    expect(validateMock).toHaveBeenCalledWith('hihi')
   })
 
   test('removes field on unmount', () => {
     const mock = jest.fn()
 
-    const s = shallow(
-      <FormInput
-        name="test"
-        context={{
-          ...defaultCtx,
-          remove: mock,
-        }}
-      />
-    )
+    const TestComp = (p: { which: 0 | 1 }) => {
+      return (
+        <Form onSubmit={mock}>
+          {p.which === 0 ? (
+            <Input name="test" />
+          ) : (
+            <div>
+              <Input name="test2" />
+            </div>
+          )}
+        </Form>
+      )
+    }
 
-    s.unmount()
+    const s = mount(<TestComp which={0} />)
 
-    expect(mock).toHaveBeenCalledWith('test')
+    s.find('input')
+      .first()
+      .simulate('change', { target: { value: 'hi' } })
+    s.find('form').simulate('submit')
+
+    expect(mock).toHaveBeenCalledWith({ test: 'hi' })
+
+    s.setProps({ which: 1 })
+    s.find('input')
+      .first()
+      .simulate('change', { target: { value: 'hey' } })
+
+    s.find('form').simulate('submit')
+
+    expect(mock).toHaveBeenCalledWith({ test2: 'hey' })
   })
 
   test('validates field', () => {
-    const mock = jest.fn()
+    const mock = jest.fn(() => true)
 
-    const s = shallow(
-      <FormInput
-        name="test"
-        context={{
-          ...defaultCtx,
-          validateField: mock,
-        }}
-      />
+    const s = mount(
+      <Form onSubmit={noop}>
+        <Input name="test" validate={mock} validateOn="change" />
+      </Form>
     )
 
-    const i = s.instance() as FormInput
+    s.find('input').simulate('change', { target: { value: 'hi' } })
 
-    i.validate()
-
-    expect(mock).toHaveBeenCalledWith('test')
-  })
-
-  test('sets field value', () => {
-    const mock = jest.fn()
-
-    const s = shallow(
-      <FormInput
-        name="test"
-        context={{
-          ...defaultCtx,
-          setValue: mock,
-        }}
-      />
-    )
-
-    const i = s.instance() as FormInput
-
-    i.setValue('hi')
-
-    expect(mock).toHaveBeenCalledWith('test', 'hi')
+    expect(mock).toHaveBeenCalledWith('hi')
   })
 
   test('gets field value', () => {
-    const fields = new FormFields({}).add({ key: 'test', value: 'testValue' })
-
-    const s = shallow(
-      <FormInput
-        name="test"
-        context={{
-          ...defaultCtx,
-          fields,
-        }}
-      />
+    const s = mount(
+      <Form onSubmit={noop}>
+        <Input name="test" />
+      </Form>
     )
 
-    const i = s.instance() as FormInput
+    s.find('input').simulate('change', { target: { value: 'hi' } })
 
-    expect(i.value).toBe('testValue')
-  })
-
-  test('gets field raw value', () => {
-    const fields = new FormFields({}).add({
-      key: 'test',
-      transform: (v: string) => v.toUpperCase(),
-      value: 'testValue',
-    })
-
-    let s = shallow(
-      <FormInput
-        name="test"
-        context={{
-          ...defaultCtx,
-          fields,
-        }}
-      />
-    )
-
-    let i = s.instance() as FormInput
-
-    expect(i.rawValue).toBe('testValue')
-
-    s = shallow(<FormInput name="test" context={defaultCtx} />)
-
-    i = s.instance() as FormInput
-
-    expect(i.rawValue).toBe('')
+    expect(s.find('input').props().value).toBe('hi')
   })
 
   test('handles blur event', () => {
-    const mock = jest.fn()
+    const mock = jest.fn(() => true)
     const onBlur = jest.fn()
 
-    const s = shallow(
-      <FormInput
-        onBlur={onBlur}
-        name="test"
-        context={{
-          ...defaultCtx,
-          validateField: mock,
-        }}
-      />
-    )
+    const TestComp = (p: { validateOn: 'submit' | 'blur' }) => {
+      return (
+        <Form defaults={{ test: 'hi' }} onSubmit={noop}>
+          <Input
+            name="test"
+            onBlur={onBlur}
+            validate={mock}
+            validateOn={p.validateOn}
+          />
+        </Form>
+      )
+    }
 
-    const i = s.instance() as FormInput
+    const s = mount(<TestComp validateOn="submit" />)
 
-    s.simulate('blur')
+    s.find('input').simulate('blur')
 
     expect(mock).not.toHaveBeenCalled()
     expect(onBlur).toHaveBeenCalled()
 
     s.setProps({ validateOn: 'blur' })
-    s.simulate('blur')
+    s.find('input').simulate('blur')
 
-    expect(mock).toHaveBeenCalledWith('test')
+    expect(mock).toHaveBeenCalledWith('hi')
   })
 
   test('handles change event', () => {
-    const mock = jest.fn()
+    const mock = jest.fn(v => true)
     const onChange = jest.fn()
 
-    const s = shallow(
-      <FormInput
-        onChange={onChange}
-        name="test"
-        context={{
-          ...defaultCtx,
-          setValue: mock,
-        }}
-      />
+    const s = mount(
+      <Form onSubmit={noop} validateOn="change">
+        <Input name="test" onChange={onChange} validate={mock} />
+      </Form>
     )
 
-    s.simulate('change', { target: { value: 'hi' } })
+    s.find('input').simulate('change', { target: { value: 'hi' } })
 
-    expect(mock).toHaveBeenCalledWith('test', 'hi')
+    expect(mock).toHaveBeenCalledWith('hi')
     expect(onChange).toHaveBeenCalled()
   })
 

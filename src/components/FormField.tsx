@@ -1,35 +1,12 @@
 import * as React from 'react'
 
 import { FormContext } from 'components/Form'
+import { FormFieldProps, IFormContext, Omit } from 'types'
 
-import { FormFieldProps, Omit } from 'types'
+function registerField<T>(props: FormFieldProps & T, context: IFormContext) {
+  const { multiple, name: key, type, transform, validate, validateOn } = props
 
-abstract class FormField<T> extends React.PureComponent<FormFieldProps & T> {
-  static withContext<P>(Component: React.ComponentType<FormFieldProps & P>) {
-    return function ContextedComponent(
-      props: Omit<FormFieldProps & P, 'context'>
-    ) {
-      return (
-        <FormContext.Consumer>
-          {ctx => <Component {...props as FormFieldProps & P} context={ctx} />}
-        </FormContext.Consumer>
-      )
-    }
-  }
-
-  constructor(props: FormFieldProps & T) {
-    super(props)
-
-    const {
-      context,
-      multiple,
-      name: key,
-      transform,
-      type,
-      validate,
-      validateOn,
-    } = props
-
+  React.useEffect(() => {
     context.add({
       key,
       multiple: multiple || type === 'checkbox',
@@ -37,45 +14,29 @@ abstract class FormField<T> extends React.PureComponent<FormFieldProps & T> {
       validate,
       validateOn,
     })
-  }
 
-  componentDidUpdate(prevProps: FormFieldProps) {
-    const { context, name: key, transform, validate, validateOn } = this.props
-
-    if (transform !== prevProps.transform) {
-      context.setTransform(key, transform)
+    return () => {
+      context.remove(key)
     }
+  }, [])
 
-    if (validate !== prevProps.validate) {
-      context.setValidation(key, validate)
-    }
+  React.useEffect(() => {
+    context.setTransform(key, transform)
+  }, [key, transform])
 
-    if (validateOn !== prevProps.validateOn) {
-      context.setValidateOn(key, validateOn)
-    }
-  }
+  React.useEffect(() => {
+    context.setValidation(key, validate)
+  }, [key, validate])
 
-  componentWillUnmount() {
-    this.props.context.remove(this.props.name)
-  }
-
-  validate() {
-    this.props.context.validateField(this.props.name)
-  }
-
-  setValue(value: string | string[]) {
-    this.props.context.setValue(this.props.name, value)
-  }
-
-  get value() {
-    const field = this.props.context.fields.getField(this.props.name)
-    return field ? field.value : ''
-  }
-
-  get rawValue() {
-    const field = this.props.context.fields.getField(this.props.name)
-    return field ? field.rawValue : ''
-  }
+  React.useEffect(() => {
+    context.setValidateOn(key, validateOn)
+  }, [key, validateOn])
 }
 
-export default FormField
+export function useFormContext<T>(props: FormFieldProps & T) {
+  const context = React.useContext(FormContext)
+
+  registerField<T>(props, context)
+
+  return context
+}

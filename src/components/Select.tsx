@@ -1,77 +1,80 @@
 import * as React from 'react'
-import FormField from './FormField'
+import { useFormContext } from './FormField'
+
+import { FormFieldProps, IFormContext } from 'types'
 
 type ElementType = HTMLSelectElement
 type ElementProps = React.HTMLProps<ElementType>
+type Props = FormFieldProps & ElementProps
 
-export class FormSelect extends FormField<ElementProps> {
-  handleBlur = (e: React.FocusEvent<ElementType>) => {
-    const { onBlur, validateOn } = this.props
+function useHandlers(props: Props, context: IFormContext) {
+  const { multiple, name, onBlur, onChange, validateOn } = props
 
-    if (onBlur) {
-      onBlur(e)
-    }
+  return React.useMemo(
+    () => ({
+      handleBlur: (e: React.FocusEvent<ElementType>) => {
+        if (onBlur) {
+          onBlur(e)
+        }
 
-    if (validateOn === 'blur') {
-      this.validate()
-    }
-  }
+        if (validateOn === 'blur') {
+          context.validateField(name)
+        }
+      },
 
-  handleChange = (e: React.ChangeEvent<ElementType>) => {
-    const { multiple, onChange } = this.props
+      handleChange: (e: React.ChangeEvent<ElementType>) => {
+        if (onChange) {
+          onChange(e)
+        }
 
-    if (onChange) {
-      onChange(e)
-    }
+        if (multiple) {
+          const values = [].reduce.call(
+            e.target.options,
+            (vals: string[], v: HTMLOptionElement) => {
+              if (v.selected) {
+                vals.push(v.value)
+              }
 
-    if (multiple) {
-      const values = [].reduce.call(
-        e.target.options,
-        (vals: string[], v: HTMLOptionElement) => {
-          if (v.selected) {
-            vals.push(v.value)
-          }
+              return vals
+            },
+            []
+          )
 
-          return vals
-        },
-        []
-      )
+          context.setValue(name, values)
+        } else {
+          context.setValue(name, e.target.value)
+        }
+      },
+    }),
+    [multiple, name, validateOn, onBlur, onChange]
+  )
+}
 
-      this.setValue(values)
-    } else {
-      this.setValue(e.target.value)
-    }
-  }
-
-  get emptyValue(): string | string[] {
-    if (this.props.multiple) {
-      return []
-    } else {
-      return ''
-    }
-  }
-
-  render() {
-    const {
-      children,
-      context,
-      transform,
-      validate,
-      validateOn,
-      ...inputProps
-    } = this.props
-
-    return (
-      <select
-        {...inputProps}
-        onBlur={this.handleBlur}
-        onChange={this.handleChange}
-        value={this.value || this.emptyValue}
-      >
-        {children}
-      </select>
-    )
+function getEmptyValue(multiple: boolean): string | string[] {
+  if (multiple) {
+    return []
+  } else {
+    return ''
   }
 }
 
-export default FormField.withContext<ElementProps>(FormSelect)
+export default function Select(props: Props) {
+  const context = useFormContext<ElementProps>(props)
+  const handlers = useHandlers(props, context)
+
+  const field = context.fields.getField(props.name)
+  const value = field ? field.value : getEmptyValue(props.multiple)
+
+  const { children, transform, validate, validateOn, ...inputProps } = props
+
+  return (
+    <select
+      {...inputProps}
+      onBlur={handlers.handleBlur}
+      onChange={handlers.handleChange}
+      value={value}
+    >
+      {children}
+    </select>
+  )
+}

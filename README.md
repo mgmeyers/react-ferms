@@ -140,7 +140,7 @@ Outputs the transformed value of a form field.
 
 The field name or names to render
 
-#### `render?: (value: any | any[], status: FormStatus | FormStatus[]) => React.ReactNode`
+#### `render?: (value: any | any[], status: FormStatus | FormStatus[]) => JSX.Element`
 
 ```typescript
 enum FormStatus {
@@ -161,12 +161,13 @@ Outputs any errors associated with a field.
 
 The desired field's name
 
-#### `render?: (errors: Array<string | Error | JSX.Element>) => React.ReactNode`
+#### `render?: (errors: Array<string | Error | JSX.Element>) => JSX.Element`
 
 ---
 
 ## TODO:
 
+* Test key changes
 * Add rollup build
 * ComponentShouldUpdate
 * Async validation

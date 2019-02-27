@@ -1,5 +1,5 @@
 export { default as Err } from 'components/Err'
-export { default as Form } from 'components/Form'
+export { default as Form, FormContext } from 'components/Form'
 export { default as FormField } from 'components/FormField'
 export { default as Input } from 'components/Input'
 export { default as Select } from 'components/Select'

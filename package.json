@@ -1,8 +1,11 @@
 {
   "name": "react-peasy-form",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
+  "files": [
+    "lib/**/*"
+  ],
   "repository": "https://github.com/mgmeyers/react-peasy-form",
   "author": "mgmeyers <hello@matthewmeye.rs>",
   "license": "MIT",

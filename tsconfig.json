@@ -1,15 +1,19 @@
 {
     "compilerOptions": {
         "alwaysStrict": true,
+        "baseUrl": "./src",
+        "declaration": true,
         "jsx": "react",
         "module": "commonjs",
         "noImplicitAny": true,
         "outDir": "./lib/",
         "sourceMap": true,
-        "target": "es6",
-        "baseUrl": "./src"
+        "target": "es6"
     },
     "include": [
         "./src/**/*"
-    ]
+    ],
+	"exclude": [
+        "node_modules"
+	]
 }

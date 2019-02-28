@@ -4,7 +4,7 @@
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "repository": "https://github.com/mgmeyers/react-peasy-form",
-  "author": "mgmeyers <matthew.gregory.meyers@gmail.com>",
+  "author": "mgmeyers <hello@matthewmeye.rs>",
   "license": "MIT",
   "peerDependencies": {
     "react": "^16.8.1"

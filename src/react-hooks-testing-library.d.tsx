@@ -1,3 +1,5 @@
+// TODO: this is temporary
+
 declare module 'react-hooks-testing-library' {
   import { BoundFunction, queries } from 'dom-testing-library'
 

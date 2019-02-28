@@ -1,25 +1,24 @@
-import { mount } from 'enzyme'
 import * as React from 'react'
+import { cleanup, fireEvent, render } from 'react-testing-library'
 
 import Form from 'components/Form'
 import Input from 'components/Input'
 
-import FormFields from 'data/FormFields'
-
 import { noop } from 'helpers'
-import { defaultCtx } from './common'
 
 import { TransformFn, ValidateOnOpts } from 'types'
 
 describe('<Input />', () => {
+  afterEach(cleanup)
+
   test('should mount', () => {
-    const s = mount(
-      <Form onSubmit={noop}>
-        <Input name="test" />
+    const { queryAllByTestId } = render(
+      <Form data-testid="f" onSubmit={noop}>
+        <Input data-testid="i1" name="test" />
       </Form>
     )
 
-    expect(s.find('input').length).toBe(1)
+    expect(queryAllByTestId('i1').length).toBe(1)
   })
 
   test('should respond to prop updates', () => {
@@ -32,21 +31,24 @@ describe('<Input />', () => {
       validateOn?: ValidateOnOpts
     }) => {
       return (
-        <Form defaults={{ test: 'hi' }} onSubmit={noop}>
-          <Input name="test" {...p} />
+        <Form data-testid="f" defaults={{ test: 'hi' }} onSubmit={noop}>
+          <Input data-testid="i1" name="test" {...p} />
         </Form>
       )
     }
 
-    const s = mount(<TestComp />)
+    const { getByTestId, rerender } = render(<TestComp />)
 
-    s.setProps({
-      transform: transMock,
-      validate: validateMock,
-      validateOn: 'change',
-    })
+    rerender(
+      <TestComp
+        transform={transMock}
+        validate={validateMock}
+        validateOn="change"
+      />
+    )
 
-    s.find('input').simulate('change', { target: { value: 'hi' } })
+    fireEvent.change(getByTestId('i1'), { target: { value: 'hi' } })
+
     expect(transMock).toHaveBeenCalledWith('hi')
     expect(validateMock).toHaveBeenCalledWith('hihi')
   })
@@ -56,33 +58,29 @@ describe('<Input />', () => {
 
     const TestComp = (p: { which: 0 | 1 }) => {
       return (
-        <Form onSubmit={mock}>
+        <Form data-testid="f" onSubmit={mock}>
           {p.which === 0 ? (
-            <Input name="test" />
+            <Input data-testid="i1" name="test" />
           ) : (
             <div>
-              <Input name="test2" />
+              <Input data-testid="i2" name="test2" />
             </div>
           )}
         </Form>
       )
     }
 
-    const s = mount(<TestComp which={0} />)
+    const { getByTestId, rerender } = render(<TestComp which={0} />)
 
-    s.find('input')
-      .first()
-      .simulate('change', { target: { value: 'hi' } })
-    s.find('form').simulate('submit')
+    fireEvent.change(getByTestId('i1'), { target: { value: 'hi' } })
+    fireEvent.submit(getByTestId('f'))
 
     expect(mock).toHaveBeenCalledWith({ test: 'hi' })
 
-    s.setProps({ which: 1 })
-    s.find('input')
-      .first()
-      .simulate('change', { target: { value: 'hey' } })
+    rerender(<TestComp which={1} />)
 
-    s.find('form').simulate('submit')
+    fireEvent.change(getByTestId('i2'), { target: { value: 'hey' } })
+    fireEvent.submit(getByTestId('f'))
 
     expect(mock).toHaveBeenCalledWith({ test2: 'hey' })
   })
@@ -90,27 +88,32 @@ describe('<Input />', () => {
   test('validates field', () => {
     const mock = jest.fn(() => true)
 
-    const s = mount(
-      <Form onSubmit={noop}>
-        <Input name="test" validate={mock} validateOn="change" />
+    const { getByTestId } = render(
+      <Form data-testid="f" onSubmit={noop}>
+        <Input
+          data-testid="i1"
+          name="test"
+          validate={mock}
+          validateOn="change"
+        />
       </Form>
     )
 
-    s.find('input').simulate('change', { target: { value: 'hi' } })
+    fireEvent.change(getByTestId('i1'), { target: { value: 'hi' } })
 
     expect(mock).toHaveBeenCalledWith('hi')
   })
 
   test('gets field value', () => {
-    const s = mount(
-      <Form onSubmit={noop}>
-        <Input name="test" />
+    const { getByTestId } = render(
+      <Form data-testid="f" onSubmit={noop}>
+        <Input data-testid="i1" name="test" />
       </Form>
     )
 
-    s.find('input').simulate('change', { target: { value: 'hi' } })
+    fireEvent.change(getByTestId('i1'), { target: { value: 'hi' } })
 
-    expect(s.find('input').props().value).toBe('hi')
+    expect((getByTestId('i1') as HTMLInputElement).value).toBe('hi')
   })
 
   test('handles blur event', () => {
@@ -119,8 +122,9 @@ describe('<Input />', () => {
 
     const TestComp = (p: { validateOn: 'submit' | 'blur' }) => {
       return (
-        <Form defaults={{ test: 'hi' }} onSubmit={noop}>
+        <Form data-testid="f" defaults={{ test: 'hi' }} onSubmit={noop}>
           <Input
+            data-testid="i1"
             name="test"
             onBlur={onBlur}
             validate={mock}
@@ -130,15 +134,16 @@ describe('<Input />', () => {
       )
     }
 
-    const s = mount(<TestComp validateOn="submit" />)
+    const { getByTestId, rerender } = render(<TestComp validateOn="submit" />)
 
-    s.find('input').simulate('blur')
+    fireEvent.blur(getByTestId('i1'))
 
     expect(mock).not.toHaveBeenCalled()
     expect(onBlur).toHaveBeenCalled()
 
-    s.setProps({ validateOn: 'blur' })
-    s.find('input').simulate('blur')
+    rerender(<TestComp validateOn="blur" />)
+
+    fireEvent.blur(getByTestId('i1'))
 
     expect(mock).toHaveBeenCalledWith('hi')
   })
@@ -147,13 +152,18 @@ describe('<Input />', () => {
     const mock = jest.fn(v => true)
     const onChange = jest.fn()
 
-    const s = mount(
-      <Form onSubmit={noop} validateOn="change">
-        <Input name="test" onChange={onChange} validate={mock} />
+    const { getByTestId } = render(
+      <Form data-testid="f" onSubmit={noop} validateOn="change">
+        <Input
+          data-testid="i1"
+          name="test"
+          onChange={onChange}
+          validate={mock}
+        />
       </Form>
     )
 
-    s.find('input').simulate('change', { target: { value: 'hi' } })
+    fireEvent.change(getByTestId('i1'), { target: { value: 'hi' } })
 
     expect(mock).toHaveBeenCalledWith('hi')
     expect(onChange).toHaveBeenCalled()
@@ -162,56 +172,42 @@ describe('<Input />', () => {
   test('handles checkbox inputs', () => {
     const onSubmit = jest.fn()
 
-    const s = mount(
-      <Form onSubmit={onSubmit}>
-        <Input name="test" type="checkbox" value="one" />
-        <Input name="test" type="checkbox" value="two" />
+    const { getByTestId } = render(
+      <Form data-testid="f" onSubmit={onSubmit}>
+        <Input data-testid="i1" name="test" type="checkbox" value="one" />
+        <Input data-testid="i2" name="test" type="checkbox" value="two" />
       </Form>
     )
 
-    s.find('input')
-      .first()
-      .simulate('change', {
-        target: { value: 'one', checked: true },
-      })
-
-    s.find('form').simulate('submit')
+    fireEvent.click(getByTestId('i1'))
+    fireEvent.submit(getByTestId('f'))
 
     expect(onSubmit).toHaveBeenCalledWith({
       test: ['one'],
     })
 
-    s.find('input')
-      .last()
-      .simulate('change', {
-        target: { value: 'two', checked: true },
-      })
+    onSubmit.mockReset()
 
-    s.find('form').simulate('submit')
+    fireEvent.click(getByTestId('i2'))
+    fireEvent.submit(getByTestId('f'))
 
     expect(onSubmit).toHaveBeenCalledWith({
       test: ['one', 'two'],
     })
 
-    s.find('input')
-      .first()
-      .simulate('change', {
-        target: { value: 'one', checked: false },
-      })
+    onSubmit.mockReset()
 
-    s.find('form').simulate('submit')
+    fireEvent.click(getByTestId('i1'))
+    fireEvent.submit(getByTestId('f'))
 
     expect(onSubmit).toHaveBeenCalledWith({
       test: ['two'],
     })
 
-    s.find('input')
-      .last()
-      .simulate('change', {
-        target: { value: 'two', checked: false },
-      })
+    onSubmit.mockReset()
 
-    s.find('form').simulate('submit')
+    fireEvent.click(getByTestId('i2'))
+    fireEvent.submit(getByTestId('f'))
 
     expect(onSubmit).toHaveBeenCalledWith({
       test: [],
@@ -220,14 +216,15 @@ describe('<Input />', () => {
 
   test('returns correct value on form submit', () => {
     const onSubmit = jest.fn()
-    const s = mount(
-      <Form onSubmit={onSubmit}>
-        <Input name="test" transform={(v: string) => v + v.toUpperCase()} />
+    const t = (v: string) => v + v.toUpperCase()
+    const { getByTestId } = render(
+      <Form data-testid="f" onSubmit={onSubmit}>
+        <Input data-testid="t" name="test" transform={t} />
       </Form>
     )
 
-    s.find('input').simulate('change', { target: { value: 'hi' } })
-    s.find('form').simulate('submit')
+    fireEvent.change(getByTestId('t'), { target: { value: 'hi' } })
+    fireEvent.submit(getByTestId('f'))
 
     expect(onSubmit).toHaveBeenCalledWith({ test: 'hiHI' })
   })

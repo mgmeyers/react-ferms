@@ -21,6 +21,8 @@ export interface FormProps {
    */
   defaults?: MapStringAny
 
+  children?: React.ReactNode
+
   /**
    * The default setting describing when to trigger field validation. This can
    * be overridden on a per-field basis

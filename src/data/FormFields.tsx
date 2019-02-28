@@ -158,20 +158,21 @@ export default class FormFields {
   }
 
   setValidationStrategy(validationStrategy: ValidationStrategy) {
+    const strat = validationStrategy || defaultValidationStrat
     const {
       options: { fields: currentFields },
     } = this
 
     const fields = Object.keys(currentFields).reduce((newFields, key) => {
       const f = currentFields[key]
-      return prop.set.mutate(
-        newFields,
-        key,
-        f.setValidationStrategy(validationStrategy)
-      )
+      return prop.set.mutate(newFields, key, f.setValidationStrategy(strat))
     }, {})
 
-    return new FormFields({ ...this.options, fields, validationStrategy })
+    return new FormFields({
+      ...this.options,
+      fields,
+      validationStrategy: strat,
+    })
   }
 
   setDefaultValidateOn(validateOn: ValidateOnOpts): FormFields {
@@ -179,16 +180,18 @@ export default class FormFields {
       options: { fields: currentFields },
     } = this
 
+    const on = validateOn || 'submit'
+
     const fields = Object.keys(currentFields).reduce((newFields, key) => {
       const f = currentFields[key]
-      return prop.set.mutate(newFields, key, f.setDefaultValidateOn(validateOn))
+      return prop.set.mutate(newFields, key, f.setDefaultValidateOn(on))
     }, {})
 
-    return new FormFields({ ...this.options, validateOn, fields })
+    return new FormFields({ ...this.options, validateOn: on, fields })
   }
 
   setDefaults(defaults: MapStringAny): FormFields {
-    return new FormFields(prop.set(this.options, 'defaults', defaults))
+    return new FormFields(prop.set(this.options, 'defaults', defaults || {}))
   }
 
   private update(key: string, field: FormField): FormFields {

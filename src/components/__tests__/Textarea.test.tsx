@@ -1,5 +1,5 @@
-import { mount } from 'enzyme'
 import * as React from 'react'
+import { cleanup, fireEvent, render } from 'react-testing-library'
 
 import Form from 'components/Form'
 import Textarea from 'components/Textarea'
@@ -7,14 +7,16 @@ import Textarea from 'components/Textarea'
 import { noop } from 'helpers'
 
 describe('<Textarea />', () => {
+  afterEach(cleanup)
+
   test('should mount', () => {
-    const s = mount(
-      <Form onSubmit={noop}>
-        <Textarea name="test" />
+    const { queryAllByTestId } = render(
+      <Form data-testid="f" onSubmit={noop}>
+        <Textarea data-testid="i1" name="test" />
       </Form>
     )
 
-    expect(s.find('textarea').length).toBe(1)
+    expect(queryAllByTestId('i1').length).toBe(1)
   })
 
   test('handles blur event', () => {
@@ -23,8 +25,9 @@ describe('<Textarea />', () => {
 
     const TestComp = (p: { validateOn: 'submit' | 'blur' }) => {
       return (
-        <Form defaults={{ test: 'hi' }} onSubmit={noop}>
+        <Form data-testid="f" defaults={{ test: 'hi' }} onSubmit={noop}>
           <Textarea
+            data-testid="i1"
             name="test"
             onBlur={onBlur}
             validate={mock}
@@ -34,15 +37,16 @@ describe('<Textarea />', () => {
       )
     }
 
-    const s = mount(<TestComp validateOn="submit" />)
+    const { getByTestId, rerender } = render(<TestComp validateOn="submit" />)
 
-    s.find('textarea').simulate('blur')
+    fireEvent.blur(getByTestId('i1'))
 
     expect(mock).not.toHaveBeenCalled()
     expect(onBlur).toHaveBeenCalled()
 
-    s.setProps({ validateOn: 'blur' })
-    s.find('textarea').simulate('blur')
+    rerender(<TestComp validateOn="blur" />)
+
+    fireEvent.blur(getByTestId('i1'))
 
     expect(mock).toHaveBeenCalledWith('hi')
   })
@@ -51,13 +55,18 @@ describe('<Textarea />', () => {
     const mock = jest.fn(v => true)
     const onChange = jest.fn()
 
-    const s = mount(
-      <Form onSubmit={noop} validateOn="change">
-        <Textarea name="test" onChange={onChange} validate={mock} />
+    const { getByTestId } = render(
+      <Form data-testid="f" onSubmit={noop} validateOn="change">
+        <Textarea
+          data-testid="i1"
+          name="test"
+          onChange={onChange}
+          validate={mock}
+        />
       </Form>
     )
 
-    s.find('textarea').simulate('change', { target: { value: 'hi' } })
+    fireEvent.change(getByTestId('i1'), { target: { value: 'hi' } })
 
     expect(mock).toHaveBeenCalledWith('hi')
     expect(onChange).toHaveBeenCalled()
@@ -65,14 +74,15 @@ describe('<Textarea />', () => {
 
   test('returns correct value on form submit', () => {
     const onSubmit = jest.fn()
-    const s = mount(
-      <Form onSubmit={onSubmit}>
-        <Textarea name="test" transform={(v: string) => v + v.toUpperCase()} />
+    const t = (v: string) => v + v.toUpperCase()
+    const { getByTestId } = render(
+      <Form data-testid="f" onSubmit={onSubmit}>
+        <Textarea data-testid="t" name="test" transform={t} />
       </Form>
     )
 
-    s.find('textarea').simulate('change', { target: { value: 'hi' } })
-    s.find('form').simulate('submit')
+    fireEvent.change(getByTestId('t'), { target: { value: 'hi' } })
+    fireEvent.submit(getByTestId('f'))
 
     expect(onSubmit).toHaveBeenCalledWith({ test: 'hiHI' })
   })

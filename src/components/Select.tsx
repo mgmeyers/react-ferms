@@ -1,52 +1,40 @@
 import * as React from 'react'
-import { useFormContext } from './FormField'
+
+import { useFieldEffects, useFormContext, useOnBlur } from './hooks'
 
 import { FormFieldProps, IFormContext } from 'types'
 
 type ElementType = HTMLSelectElement
-type ElementProps = React.HTMLProps<ElementType>
-type Props = FormFieldProps & ElementProps
+type Props = FormFieldProps & React.HTMLProps<ElementType>
 
-function useHandlers(props: Props, context: IFormContext) {
-  const { multiple, name, onBlur, onChange, validateOn } = props
+function useOnChange(props: Props, context: IFormContext) {
+  const { multiple, name, onChange } = props
 
   return React.useMemo(
-    () => ({
-      handleBlur: (e: React.FocusEvent<ElementType>) => {
-        if (onBlur) {
-          onBlur(e)
-        }
+    () => (e: React.ChangeEvent<ElementType>) => {
+      if (onChange) {
+        onChange(e)
+      }
 
-        if (validateOn === 'blur') {
-          context.validateField(name)
-        }
-      },
+      if (multiple) {
+        const values = [].reduce.call(
+          e.target.options,
+          (vals: string[], v: HTMLOptionElement) => {
+            if (v.selected) {
+              vals.push(v.value)
+            }
 
-      handleChange: (e: React.ChangeEvent<ElementType>) => {
-        if (onChange) {
-          onChange(e)
-        }
+            return vals
+          },
+          []
+        )
 
-        if (multiple) {
-          const values = [].reduce.call(
-            e.target.options,
-            (vals: string[], v: HTMLOptionElement) => {
-              if (v.selected) {
-                vals.push(v.value)
-              }
-
-              return vals
-            },
-            []
-          )
-
-          context.setValue(name, values)
-        } else {
-          context.setValue(name, e.target.value)
-        }
-      },
-    }),
-    [multiple, name, validateOn, onBlur, onChange]
+        context.setValue(name, values)
+      } else {
+        context.setValue(name, e.target.value)
+      }
+    },
+    [multiple, name, onChange]
   )
 }
 
@@ -59,8 +47,12 @@ function getEmptyValue(multiple: boolean): string | string[] {
 }
 
 export default function Select(props: Props) {
-  const context = useFormContext<ElementProps>(props)
-  const handlers = useHandlers(props, context)
+  const context = useFormContext()
+
+  useFieldEffects(props, context)
+
+  const onBlur = useOnBlur<ElementType, Props>(props, context)
+  const onChange = useOnChange(props, context)
 
   const field = context.fields.getField(props.name)
   const value = field ? field.value : getEmptyValue(props.multiple)
@@ -68,12 +60,7 @@ export default function Select(props: Props) {
   const { children, transform, validate, validateOn, ...inputProps } = props
 
   return (
-    <select
-      {...inputProps}
-      onBlur={handlers.handleBlur}
-      onChange={handlers.handleChange}
-      value={value}
-    >
+    <select {...inputProps} onBlur={onBlur} onChange={onChange} value={value}>
       {children}
     </select>
   )

@@ -1,4 +1,3 @@
-import * as prop from 'prop-ops'
 import * as React from 'react'
 
 import FormFields from 'data/FormFields'
@@ -12,10 +11,6 @@ import {
   ValidateOnOpts,
 } from 'types'
 
-interface FormState {
-  fields: FormFields
-}
-
 export const FormContext = React.createContext<IFormContext>({
   add: noop,
   fields: new FormFields({}),
@@ -27,113 +22,163 @@ export const FormContext = React.createContext<IFormContext>({
   validateField: noop,
 })
 
-class Form extends React.PureComponent<FormProps, FormState> {
-  constructor(props: FormProps) {
-    super(props)
+function useFormEffects(props: FormProps, dispatch: React.Dispatch<Action>) {
+  const { defaults, validateOn, validationStrategy } = props
 
-    this.state = {
-      fields: new FormFields({
-        defaults: this.props.defaults,
-        validateOn: this.props.validateOn,
-        validationStrategy: this.props.validationStrategy,
-      }),
-    }
-  }
+  React.useEffect(() => {
+    dispatch({
+      defaults,
+      type: 'setDefaults',
+    })
+  }, [defaults])
 
-  componentDidUpdate(prevProps: FormProps) {
-    const { validateOn, defaults, validationStrategy } = this.props
-    let fields = this.state.fields
+  React.useEffect(() => {
+    dispatch({
+      defaultValidateOn: validateOn,
+      type: 'setDefaultValidateOn',
+    })
+  }, [validateOn])
 
-    if (prevProps.validateOn !== validateOn) {
-      fields = fields.setDefaultValidateOn(validateOn)
-    }
+  React.useEffect(() => {
+    dispatch({
+      type: 'setValidationStrategy',
+      validationStrategy,
+    })
+  }, [validationStrategy])
+}
 
-    if (prevProps.defaults !== defaults) {
-      fields = fields.setDefaults(defaults)
-    }
+function useOnSubmit(
+  props: FormProps,
+  fields: FormFields,
+  dispatch: React.Dispatch<Action>
+) {
+  const { onError, onSubmit, preValidate } = props
 
-    if (prevProps.validationStrategy !== validationStrategy) {
-      fields = fields.setValidationStrategy(validationStrategy)
-    }
+  return React.useMemo(
+    () => (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault()
 
-    if (fields !== this.state.fields) {
-      this.setState(state => prop.set(state, 'fields', fields))
-    }
-  }
+      if (preValidate) {
+        preValidate()
+      }
 
-  handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+      const results = fields.validate()
 
-    const { onError, onSubmit, preValidate } = this.props
-    const { fields } = this.state
+      dispatch({ type: 'set', fields: results.fields })
 
-    if (preValidate) {
-      preValidate()
-    }
+      if (results.valid) {
+        onSubmit(fields.values)
+      } else if (onError) {
+        onError(results.fields.errors)
+      }
+    },
+    [fields, onError, onSubmit, preValidate]
+  )
+}
 
-    const results = fields.validate()
+interface Action {
+  type: string
+  [k: string]: any
+}
 
-    this.updateFields(() => results.fields)
-
-    if (results.valid) {
-      onSubmit(fields.values)
-    } else if (onError) {
-      onError(results.fields.errors)
-    }
-  }
-
-  add = (field: AddFieldOpts) => {
-    this.updateFields(fields => fields.add(field))
-  }
-
-  remove = (key: string) => {
-    this.updateFields(fields => fields.remove(key))
-  }
-
-  validateField = (key: string) => {
-    this.updateFields(fields => fields.validateField(key).fields)
-  }
-
-  setValue = (key: string, value: string) => {
-    this.updateFields(fields => fields.setValue(key, value))
-  }
-
-  setValidation = (key: string, validate: any) => {
-    this.updateFields(fields => fields.setValidation(key, validate))
-  }
-
-  setValidateOn = (key: string, validateOn: ValidateOnOpts) => {
-    this.updateFields(fields => fields.setValidateOn(key, validateOn))
-  }
-
-  setTransform = (key: string, transform: TransformFn) => {
-    this.updateFields(fields => fields.setTransform(key, transform))
-  }
-
-  updateFields(fn: (s: FormFields) => FormFields) {
-    this.setState(state => prop.set(state, 'fields', fn(state.fields)))
-  }
-
-  get contextValue() {
-    return {
-      add: this.add,
-      fields: this.state.fields,
-      remove: this.remove,
-      setTransform: this.setTransform,
-      setValidateOn: this.setValidateOn,
-      setValidation: this.setValidation,
-      setValue: this.setValue,
-      validateField: this.validateField,
-    }
-  }
-
-  render() {
-    return (
-      <FormContext.Provider value={this.contextValue}>
-        <form onSubmit={this.handleSubmit}>{this.props.children}</form>
-      </FormContext.Provider>
-    )
+function reducer(fields: FormFields, action: Action) {
+  switch (action.type) {
+    case 'add':
+      return fields.add(action.field)
+    case 'remove':
+      return fields.remove(action.key)
+    case 'setTransform':
+      return fields.setTransform(action.key, action.transform)
+    case 'setValidateOn':
+      return fields.setValidateOn(action.key, action.validateOn)
+    case 'setValidation':
+      return fields.setValidation(action.key, action.validate)
+    case 'setValue':
+      return fields.setValue(action.key, action.value)
+    case 'validateField':
+      return fields.validateField(action.key).fields
+    case 'setDefaults':
+      return fields.setDefaults(action.defaults)
+    case 'setDefaultValidateOn':
+      return fields.setDefaultValidateOn(action.defaultValidateOn)
+    case 'setValidationStrategy':
+      return fields.setValidationStrategy(action.validationStrategy)
+    case 'set':
+      return action.fields
   }
 }
 
-export default Form
+function useContextValue(fields: FormFields, dispatch: React.Dispatch<Action>) {
+  return React.useMemo(
+    () => ({
+      add: (field: AddFieldOpts) => {
+        dispatch({ type: 'add', field })
+      },
+      fields,
+      remove: (key: string) => {
+        dispatch({ type: 'remove', key })
+      },
+      setTransform: (key: string, transform: TransformFn) => {
+        dispatch({ type: 'setTransform', key, transform })
+      },
+      setValidateOn: (key: string, validateOn: ValidateOnOpts) => {
+        dispatch({ type: 'setValidateOn', key, validateOn })
+      },
+      setValidation: (key: string, validate: any) => {
+        dispatch({ type: 'setValidation', key, validate })
+      },
+      setValue: (key: string, value: string) => {
+        dispatch({ type: 'setValue', key, value })
+      },
+      validateField: (key: string) => {
+        dispatch({ type: 'validateField', key })
+      },
+    }),
+    [fields]
+  )
+}
+
+export function useFormState(props: FormProps) {
+  const { defaults, validateOn, validationStrategy } = props
+
+  const [fields, dispatch] = React.useReducer(
+    reducer,
+    new FormFields({
+      defaults,
+      validateOn,
+      validationStrategy,
+    })
+  )
+
+  useFormEffects(props, dispatch)
+
+  return {
+    context: useContextValue(fields, dispatch),
+    onSubmit: useOnSubmit(props, fields, dispatch),
+  }
+}
+
+export default function Form(
+  props: FormProps & React.HTMLProps<HTMLFormElement>
+) {
+  const {
+    children,
+    defaults,
+    onError,
+    onSubmit: os,
+    preValidate,
+    validateOn,
+    validationStrategy,
+    ...formProps
+  } = props
+
+  const { context, onSubmit } = useFormState(props)
+
+  return (
+    <FormContext.Provider value={context}>
+      <form {...formProps} onSubmit={onSubmit}>
+        {props.children}
+      </form>
+    </FormContext.Provider>
+  )
+}

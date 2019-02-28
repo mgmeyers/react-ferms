@@ -1,42 +1,34 @@
 import * as React from 'react'
-import { useFormContext } from './FormField'
+
+import { useFieldEffects, useFormContext, useOnBlur } from './hooks'
 
 import { FormFieldProps, IFormContext } from 'types'
 
 type ElementType = HTMLTextAreaElement
-type ElementProps = React.HTMLProps<ElementType>
-type Props = FormFieldProps & ElementProps
+type Props = FormFieldProps & React.HTMLProps<ElementType>
 
-function useHandlers(props: Props, context: IFormContext) {
-  const { name, onBlur, onChange, validateOn } = props
+function useOnChange(props: Props, context: IFormContext) {
+  const { name, onChange } = props
 
   return React.useMemo(
-    () => ({
-      handleBlur: (e: React.FocusEvent<ElementType>) => {
-        if (onBlur) {
-          onBlur(e)
-        }
+    () => (e: React.ChangeEvent<ElementType>) => {
+      if (onChange) {
+        onChange(e)
+      }
 
-        if (validateOn === 'blur') {
-          context.validateField(name)
-        }
-      },
-
-      handleChange: (e: React.ChangeEvent<ElementType>) => {
-        if (onChange) {
-          onChange(e)
-        }
-
-        context.setValue(name, e.target.value)
-      },
-    }),
-    [name, validateOn, onBlur, onChange]
+      context.setValue(name, e.target.value)
+    },
+    [name, onChange]
   )
 }
 
 export default function Textarea(props: Props) {
-  const context = useFormContext<ElementProps>(props)
-  const handlers = useHandlers(props, context)
+  const context = useFormContext()
+
+  useFieldEffects(props, context)
+
+  const onBlur = useOnBlur<ElementType, Props>(props, context)
+  const onChange = useOnChange(props, context)
 
   const field = context.fields.getField(props.name)
 
@@ -45,8 +37,8 @@ export default function Textarea(props: Props) {
   return (
     <textarea
       {...inputProps}
-      onBlur={handlers.handleBlur}
-      onChange={handlers.handleChange}
+      onBlur={onBlur}
+      onChange={onChange}
       value={field ? field.value : ''}
     />
   )

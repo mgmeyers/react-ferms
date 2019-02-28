@@ -1,91 +1,95 @@
 import { shallow } from 'enzyme'
 import * as React from 'react'
+import { act, cleanup, renderHook } from 'react-hooks-testing-library'
 
-import Form from 'components/Form'
+import Form, { useFormState } from 'components/Form'
 import { noop } from 'helpers'
 
 describe('<Form />', () => {
+  afterEach(cleanup)
+
   test('should mount', () => {
     const s = shallow(<Form onSubmit={noop} />)
     expect(s.find('form').length).toBe(1)
   })
 
   test('should add fields', () => {
-    const s = shallow(<Form onSubmit={noop} />).instance() as Form
+    const { result } = renderHook(() => useFormState({ onSubmit: noop }))
 
-    s.add({ key: 'a' })
-    s.add({ key: 'b', value: 'c' })
+    act(() => result.current.context.add({ key: 'a' }))
+    act(() => result.current.context.add({ key: 'b', value: 'c' }))
 
-    expect(s.state.fields.values).toEqual({
+    expect(result.current.context.fields.values).toEqual({
       a: '',
       b: 'c',
     })
   })
 
   test('should remove fields', () => {
-    const s = shallow(<Form onSubmit={noop} />).instance() as Form
+    const { result } = renderHook(() => useFormState({ onSubmit: noop }))
 
-    s.add({ key: 'a' })
-    s.add({ key: 'b', value: 'c' })
-    s.remove('a')
+    act(() => result.current.context.add({ key: 'a' }))
+    act(() => result.current.context.add({ key: 'b', value: 'c' }))
+    act(() => result.current.context.remove('a'))
 
-    expect(s.state.fields.values).toEqual({
+    expect(result.current.context.fields.values).toEqual({
       b: 'c',
     })
   })
 
   test('should validate field', () => {
     const mock = jest.fn(v => true)
-    const s = shallow(<Form onSubmit={noop} />).instance() as Form
 
-    s.add({ key: 'a', validate: mock })
-    s.validateField('a')
+    const { result } = renderHook(() => useFormState({ onSubmit: noop }))
+
+    act(() => result.current.context.add({ key: 'a', validate: mock }))
+    act(() => result.current.context.validateField('a'))
 
     expect(mock).toHaveBeenCalled()
   })
 
   test('should set field value', () => {
-    const s = shallow(<Form onSubmit={noop} />).instance() as Form
+    const { result } = renderHook(() => useFormState({ onSubmit: noop }))
 
-    s.add({ key: 'a' })
-    s.setValue('a', 'b')
+    act(() => result.current.context.add({ key: 'a' }))
+    act(() => result.current.context.setValue('a', 'b'))
 
-    expect(s.state.fields.values).toEqual({
+    expect(result.current.context.fields.values).toEqual({
       a: 'b',
     })
   })
 
   test('should set field validation', () => {
     const mock = jest.fn(v => true)
-    const s = shallow(<Form onSubmit={noop} />).instance() as Form
+    const { result } = renderHook(() => useFormState({ onSubmit: noop }))
 
-    s.add({ key: 'a' })
-    s.setValidation('a', mock)
-    s.validateField('a')
+    act(() => result.current.context.add({ key: 'a' }))
+    act(() => result.current.context.setValidation('a', mock))
+    act(() => result.current.context.validateField('a'))
 
     expect(mock).toHaveBeenCalled()
   })
 
   test('should set field validateOn', () => {
     const mock = jest.fn(v => true)
-    const s = shallow(<Form onSubmit={noop} />).instance() as Form
+    const { result } = renderHook(() => useFormState({ onSubmit: noop }))
 
-    s.add({ key: 'a' })
-    s.setValidation('a', mock)
-    s.setValidateOn('a', 'change')
-    s.setValue('a', 'hi')
+    act(() => result.current.context.add({ key: 'a' }))
+    act(() => result.current.context.setValidation('a', mock))
+    act(() => result.current.context.setValidateOn('a', 'change'))
+    act(() => result.current.context.setValue('a', 'hi'))
 
     expect(mock).toHaveBeenCalled()
   })
 
   test('should set field transform', () => {
     const mock = jest.fn(v => v)
-    const s = shallow(<Form onSubmit={noop} />).instance() as Form
+    const { result } = renderHook(() => useFormState({ onSubmit: noop }))
 
-    s.add({ key: 'a' })
-    s.setTransform('a', mock)
+    act(() => result.current.context.add({ key: 'a' }))
+    act(() => result.current.context.setTransform('a', mock))
 
-    const _ = s.state.fields.getField('a').value
+    const _ = result.current.context.fields.getField('a').value
 
     expect(mock).toHaveBeenCalled()
   })
@@ -95,47 +99,63 @@ describe('<Form />', () => {
       return fn(v)
     })
     const validate = jest.fn(v => true)
-    const s = shallow(<Form onSubmit={noop} />)
-    const i = s.instance() as Form
 
-    s.setProps({
+    const { rerender, result } = renderHook(p => useFormState(p), {
+      initialProps: { onSubmit: noop },
+    })
+
+    const ctx1 = result.current.context.fields
+
+    rerender({
       defaults: { a: 'b' },
+      onSubmit: noop,
       validateOn: 'change',
       validationStrategy: stratMock,
     })
 
-    i.add({ key: 'a', validate })
+    expect(ctx1).not.toBe(result.current.context.fields)
 
-    expect(i.state.fields.values).toEqual({ a: 'b' })
+    act(() => result.current.context.add({ key: 'a', validate }))
 
-    i.setValue('a', 'hi')
+    expect(result.current.context.fields.values).toEqual({ a: 'b' })
 
-    expect(i.state.fields.getField('a').validationStrategy).toBe(stratMock)
+    act(() => result.current.context.setValue('a', 'hi'))
 
+    expect(result.current.context.fields.getField('a').validationStrategy).toBe(
+      stratMock
+    )
     expect(validate).toHaveBeenCalled()
     expect(stratMock).toHaveBeenCalled()
-    expect(i.state.fields.values).toEqual({ a: 'hi' })
+    expect(result.current.context.fields.values).toEqual({ a: 'hi' })
   })
 
-  test('should handle submit', () => {
+  test('should handle onSubmit', () => {
     const submit = jest.fn()
     const error = jest.fn()
     const preValidate = jest.fn()
-    const s = shallow(
-      <Form onError={error} onSubmit={submit} preValidate={preValidate} />
-    )
-    const i = s.instance() as Form
 
-    i.add({ key: 'a', value: 'b' })
+    const { result } = renderHook(p => useFormState(p), {
+      initialProps: { onError: error, onSubmit: submit, preValidate },
+    })
 
-    s.find('form').simulate('submit', { preventDefault: noop })
+    act(() => result.current.context.add({ key: 'a', value: 'b' }))
+
+    const mockEvt = { preventDefault: noop } as React.FormEvent<HTMLFormElement>
+
+    act(() => result.current.onSubmit(mockEvt))
 
     expect(submit).toHaveBeenCalledWith({ a: 'b' })
     expect(preValidate).toHaveBeenCalled()
 
-    i.add({ key: 'b', value: 'c', validate: () => ['nope'] })
+    act(() =>
+      result.current.context.add({
+        key: 'b',
+        validate: () => ['nope'],
+        value: 'c',
+      })
+    )
 
-    s.find('form').simulate('submit', { preventDefault: noop })
+    act(() => result.current.onSubmit(mockEvt))
 
     expect(error).toHaveBeenCalledWith({
       b: ['nope'],

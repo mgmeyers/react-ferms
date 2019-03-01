@@ -168,7 +168,6 @@ The desired field's name
 ## TODO:
 
 * Test key changes
-* Add rollup build
-* ComponentShouldUpdate
+* Add live examples
 * Async validation
 * Additional strategies

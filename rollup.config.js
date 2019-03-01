@@ -8,7 +8,13 @@ const cfg = (format) => ({
     format,
   },
   plugins: [
-    typescript(),
+    typescript({
+      tsconfigOverride: {
+        compilerOptions: {
+          module: 'ES2015'
+        }
+      }
+    }),
   ]
 })
 

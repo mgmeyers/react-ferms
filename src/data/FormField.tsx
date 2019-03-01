@@ -31,7 +31,7 @@ export default class FormField {
         valid ? FormStatus.DIRTY : FormStatus.INVALID
       ),
       'errors',
-      valid ? [] : results
+      valid ? [] : Array.isArray(results) ? results : [results]
     ) as FormFieldJSON
 
     return {

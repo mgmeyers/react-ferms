@@ -48,6 +48,7 @@ describe('<Input />', () => {
     )
 
     fireEvent.change(getByTestId('i1'), { target: { value: 'hi' } })
+    fireEvent.submit(getByTestId('f'))
 
     expect(transMock).toHaveBeenCalledWith('hi')
     expect(validateMock).toHaveBeenCalledWith('hihi')
@@ -220,11 +221,19 @@ describe('<Input />', () => {
     const { getByTestId } = render(
       <Form data-testid="f" onSubmit={onSubmit}>
         <Input data-testid="t" name="test" transform={t} />
+        <button data-testid="s" type="submit">
+          Submit
+        </button>
       </Form>
     )
 
-    fireEvent.change(getByTestId('t'), { target: { value: 'hi' } })
-    fireEvent.submit(getByTestId('f'))
+    const input = getByTestId('t') as HTMLInputElement
+
+    fireEvent.change(input, { target: { value: 'hi' } })
+
+    expect(input.value).toBe('hi')
+
+    fireEvent.click(getByTestId('s'))
 
     expect(onSubmit).toHaveBeenCalledWith({ test: 'hiHI' })
   })

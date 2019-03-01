@@ -39,7 +39,7 @@ export default function Textarea(props: Props) {
       {...inputProps}
       onBlur={onBlur}
       onChange={onChange}
-      value={field ? field.value : ''}
+      value={field ? field.rawValue : ''}
     />
   )
 }

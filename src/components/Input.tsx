@@ -57,7 +57,7 @@ export default function Input(props: Props) {
   const onChange = useOnChange(props, context)
 
   const field = context.fields.getField(props.name)
-  const value = field ? field.value : ''
+  const value = field ? field.rawValue : ''
 
   const { transform, validate, validateOn, ...otherProps } = props
 

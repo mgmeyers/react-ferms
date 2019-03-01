@@ -4,7 +4,7 @@
         "baseUrl": "./src",
         "declaration": true,
         "jsx": "react",
-        "module": "ES2015",
+        "module": "commonjs",
         "noImplicitAny": true,
         "outDir": "./lib/",
         "sourceMap": true,
@@ -13,7 +13,4 @@
     "include": [
         "./src/**/*"
     ],
-	"exclude": [
-        "node_modules"
-	]
 }

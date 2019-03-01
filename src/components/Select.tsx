@@ -55,7 +55,7 @@ export default function Select(props: Props) {
   const onChange = useOnChange(props, context)
 
   const field = context.fields.getField(props.name)
-  const value = field ? field.value : getEmptyValue(props.multiple)
+  const value = field ? field.rawValue : getEmptyValue(props.multiple)
 
   const { children, transform, validate, validateOn, ...inputProps } = props
 

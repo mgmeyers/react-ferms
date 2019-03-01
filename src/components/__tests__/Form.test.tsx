@@ -2,8 +2,9 @@ import { shallow } from 'enzyme'
 import * as React from 'react'
 import { act, cleanup, renderHook } from 'react-hooks-testing-library'
 
-import Form, { useFormState } from 'components/Form'
+import Form from 'components/Form'
 import { noop } from 'helpers'
+import { useFormState } from 'hooks/form'
 
 describe('<Form />', () => {
   afterEach(cleanup)

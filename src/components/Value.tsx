@@ -3,8 +3,7 @@ import * as React from 'react'
 import FormField from 'data/FormField'
 import FormFields from 'data/FormFields'
 
-import { FormContext } from './Form'
-
+import { useFormContext } from 'hooks/field'
 import { FormStatus } from 'types'
 
 type RenderFn = (
@@ -57,7 +56,7 @@ export function renderValue(
 
 export default function Value(props: ValueProps) {
   const { name, render } = props
-  const fields = getField(name, React.useContext(FormContext).fields)
+  const fields = getField(name, useFormContext().fields)
 
   return React.useMemo(() => renderValue(render, fields), [
     name,

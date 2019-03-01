@@ -5,5 +5,5 @@ export { default as Select } from 'components/Select'
 export { default as Textarea } from 'components/Textarea'
 export { default as Value } from 'components/Value'
 
-export { useFieldEffects, useFormContext, useOnBlur } from 'components/hooks'
+export { useFieldEffects, useFormContext, useOnBlur } from 'hooks/field'
 export { FormStatus } from 'types'

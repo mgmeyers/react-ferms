@@ -2,8 +2,7 @@ import * as React from 'react'
 
 import FormField from 'data/FormField'
 
-import { useFieldEffects, useFormContext, useOnBlur } from './hooks'
-
+import { useFieldEffects, useFormContext, useOnBlur } from 'hooks/field'
 import { FormFieldProps, IFormContext } from 'types'
 
 type ElementType = HTMLInputElement

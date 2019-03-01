@@ -2,7 +2,7 @@ import * as React from 'react'
 
 import FormField from 'data/FormField'
 
-import { FormContext } from './Form'
+import { useFormContext } from 'hooks/field'
 
 type RenderFn = (errors: Array<string | Error | JSX.Element>) => JSX.Element
 
@@ -29,7 +29,7 @@ export function renderError(render: RenderFn, field: FormField): JSX.Element {
 
 export default function Err(props: ErrorProps) {
   const { name, render } = props
-  const field = React.useContext(FormContext).fields.getField(name)
+  const field = useFormContext().fields.getField(name)
 
   return React.useMemo(() => renderError(render, field), [name, render, field])
 }

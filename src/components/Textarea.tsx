@@ -1,3 +1,4 @@
+import * as PropTypes from 'prop-types'
 import * as React from 'react'
 
 import { useFieldEffects, useFormContext, useOnBlur } from '../hooks/field'
@@ -42,4 +43,11 @@ export default function Textarea(props: Props) {
       value={field ? field.rawValue : ''}
     />
   )
+}
+
+Textarea.propTypes = {
+  name: PropTypes.string.isRequired,
+  transform: PropTypes.func,
+  validate: PropTypes.func,
+  validateOn: PropTypes.string,
 }

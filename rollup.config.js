@@ -1,7 +1,7 @@
 import typescript from 'rollup-plugin-typescript2'
 
 const cfg = (format) => ({
-  external: ['react', 'prop-ops'],
+  external: ['react', 'prop-ops', 'prop-types'],
   input: './src/index.tsx',
   output: {
     file: `./lib/index.${format}.js`,

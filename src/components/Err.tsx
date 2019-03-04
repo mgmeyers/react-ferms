@@ -1,3 +1,4 @@
+import * as PropTypes from 'prop-types'
 import * as React from 'react'
 
 import FormField from 'data/FormField'
@@ -32,4 +33,9 @@ export default function Err(props: ErrorProps) {
   const field = useFormContext().fields.getField(name)
 
   return React.useMemo(() => renderError(render, field), [name, render, field])
+}
+
+Err.propTypes = {
+  name: PropTypes.string.isRequired,
+  render: PropTypes.func,
 }

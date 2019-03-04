@@ -1,3 +1,4 @@
+import * as PropTypes from 'prop-types'
 import * as React from 'react'
 
 import FormField from 'data/FormField'
@@ -63,4 +64,12 @@ export default function Value(props: ValueProps) {
     render,
     ...fields,
   ]) as JSX.Element
+}
+
+Value.propTypes = {
+  name: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.arrayOf(PropTypes.string),
+  ]).isRequired,
+  render: PropTypes.func,
 }

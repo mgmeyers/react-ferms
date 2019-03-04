@@ -1,3 +1,4 @@
+import * as PropTypes from 'prop-types'
 import * as React from 'react'
 
 import FormField from 'data/FormField'
@@ -73,4 +74,12 @@ export default function Input(props: Props) {
   }
 
   return <input {...inputProps} />
+}
+
+Input.propTypes = {
+  name: PropTypes.string.isRequired,
+  transform: PropTypes.func,
+  type: PropTypes.string,
+  validate: PropTypes.func,
+  validateOn: PropTypes.string,
 }

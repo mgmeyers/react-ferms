@@ -5,6 +5,7 @@ import { act, cleanup, renderHook } from 'react-hooks-testing-library'
 import Form from 'components/Form'
 import { noop } from 'helpers'
 import { useFormState } from 'hooks/form'
+import { FormProps, IFormContext } from 'types'
 
 describe('<Form />', () => {
   afterEach(cleanup)
@@ -101,7 +102,10 @@ describe('<Form />', () => {
     })
     const validate = jest.fn(v => true)
 
-    const { rerender, result } = renderHook(p => useFormState(p), {
+    const { rerender, result } = renderHook<
+      FormProps,
+      { context: IFormContext }
+    >(p => useFormState(p), {
       initialProps: { onSubmit: noop },
     })
 

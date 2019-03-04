@@ -54,6 +54,36 @@ describe('<Input />', () => {
     expect(validateMock).toHaveBeenCalledWith('hihi')
   })
 
+  test('should respond to key updates', () => {
+    const mock = jest.fn()
+
+    const TestComp = (p: { name: string }) => {
+      return (
+        <Form data-testid="f" onSubmit={mock}>
+          <Input data-testid="i1" {...p} />
+        </Form>
+      )
+    }
+
+    const { getByTestId, rerender } = render(<TestComp name="test" />)
+
+    fireEvent.change(getByTestId('i1'), { target: { value: 'hi' } })
+    fireEvent.submit(getByTestId('f'))
+
+    expect(mock).toHaveBeenCalledWith({ test: 'hi' })
+
+    rerender(<TestComp name="hey" />)
+
+    fireEvent.submit(getByTestId('f'))
+
+    expect(mock).toHaveBeenCalledWith({ hey: 'hi' })
+
+    fireEvent.change(getByTestId('i1'), { target: { value: 'hello' } })
+    fireEvent.submit(getByTestId('f'))
+
+    expect(mock).toHaveBeenCalledWith({ hey: 'hello' })
+  })
+
   test('removes field on unmount', () => {
     const mock = jest.fn()
 

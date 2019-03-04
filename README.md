@@ -167,8 +167,6 @@ The desired field's name
 
 ## TODO:
 
-* Test key changes
-* propTypes
 * Add live examples
 * Async validation
 * Additional strategies

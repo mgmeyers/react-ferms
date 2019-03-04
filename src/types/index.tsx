@@ -153,7 +153,7 @@ export interface AddFieldOpts {
   transform?: TransformFn
   validate?: any
   validateOn?: ValidateOnOpts
-  value?: string
+  value?: string | string[]
 }
 
 export interface FormFieldsOptions {

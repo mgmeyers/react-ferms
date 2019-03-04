@@ -1,39 +1,49 @@
 import * as React from 'react'
 
 import { FormContext } from 'components/Form'
-import { FormFieldProps, IFormContext } from 'types'
+import { AddFieldOpts, FormFieldProps, IFormContext } from 'types'
 
 export function useFieldEffects<T>(
   props: FormFieldProps & T,
   context: IFormContext
 ) {
   const { multiple, name: key, type, transform, validate, validateOn } = props
+  const keyRef = React.useRef('')
 
   React.useEffect(() => {
-    context.add({
+    const fieldDef: AddFieldOpts = {
       key,
       multiple: multiple || type === 'checkbox',
       transform,
       validate,
       validateOn,
-    })
+    }
+
+    if (!keyRef.current) {
+      keyRef.current = key
+    } else {
+      fieldDef.value = context.fields.getField(keyRef.current).rawValue
+    }
+
+    context.add(fieldDef)
 
     return () => {
-      context.remove(key)
+      context.remove(keyRef.current)
+      keyRef.current = key
     }
-  }, [])
+  }, [key])
 
   React.useEffect(() => {
     context.setTransform(key, transform)
-  }, [key, transform])
+  }, [transform])
 
   React.useEffect(() => {
     context.setValidation(key, validate)
-  }, [key, validate])
+  }, [validate])
 
   React.useEffect(() => {
     context.setValidateOn(key, validateOn)
-  }, [key, validateOn])
+  }, [validateOn])
 }
 
 export function useFormContext() {

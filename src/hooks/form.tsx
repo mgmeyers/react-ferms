@@ -62,6 +62,19 @@ function reducer(fields: FormFields, action: Action) {
   return action(fields)
 }
 
+function mergeValidationResults(to: FormFields, from: FormFields): FormFields {
+  return from.keys.reduce((newFields, k) => {
+    const toField = to.getField(k)
+    const fromField = from.getField(k)
+
+    if (toField.status === fromField.status) return newFields
+
+    return newFields
+      .setStatus(k, fromField.status)
+      .setErrors(k, fromField.errors)
+  }, to)
+}
+
 function useContextValue(fields: FormFields, dispatch: React.Dispatch<Action>) {
   return React.useMemo(
     () => ({
@@ -90,9 +103,8 @@ function useContextValue(fields: FormFields, dispatch: React.Dispatch<Action>) {
 
             flds = results.fields
 
-            // TODO: Merge fields to keep any updates that happened while waiting for promise
             results.promise.then((res: FormFieldsValidation) =>
-              dispatch(() => res.fields)
+              dispatch(prev => mergeValidationResults(prev, res.fields))
             )
           }
 
@@ -103,9 +115,8 @@ function useContextValue(fields: FormFields, dispatch: React.Dispatch<Action>) {
         dispatch(f => {
           const results = f.validateField(key)
 
-          // TODO: Merge fields to keep any updates that happened while waiting for promise
           results.promise.then((res: FormFieldsValidation) =>
-            dispatch(() => res.fields)
+            dispatch(prev => mergeValidationResults(prev, res.fields))
           )
 
           return results.fields

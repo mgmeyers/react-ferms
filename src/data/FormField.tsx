@@ -124,7 +124,15 @@ export default class FormField {
     return this.update('validationStrategy', value)
   }
 
-  private update(key: string, value: any): FormField {
+  setStatus(value: FormStatus): FormField {
+    return this.update('status', value)
+  }
+
+  setErrors(value: Array<string | JSX.Element>): FormField {
+    return this.update('errors', value)
+  }
+
+  private update(key: keyof FormFieldJSON, value: any): FormField {
     const updatedField = prop.set(this.field, key, value) as FormFieldJSON
 
     return new FormField(updatedField)

@@ -134,6 +134,10 @@ export default class FormFields {
     return this.options.fields[fieldKey]
   }
 
+  get keys(): string[] {
+    return Object.keys(this.options.fields)
+  }
+
   get values(): MapStringAny {
     const {
       options: { fields },
@@ -186,6 +190,16 @@ export default class FormFields {
 
   setValidateOn(key: string, on: ValidateOnOpts): FormFields {
     const field = this.getField(key).setValidateOn(on)
+    return this.update(key, field)
+  }
+
+  setStatus(key: string, status: FormStatus): FormFields {
+    const field = this.getField(key).setStatus(status)
+    return this.update(key, field)
+  }
+
+  setErrors(key: string, errors: Array<string | JSX.Element>): FormFields {
+    const field = this.getField(key).setErrors(errors)
     return this.update(key, field)
   }
 

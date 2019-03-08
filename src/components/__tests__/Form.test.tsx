@@ -134,7 +134,7 @@ describe('<Form />', () => {
     expect(result.current.context.fields.values).toEqual({ a: 'hi' })
   })
 
-  test('should handle onSubmit', () => {
+  test('should handle onSubmit', done => {
     const submit = jest.fn()
     const error = jest.fn()
     const preValidate = jest.fn()
@@ -149,8 +149,24 @@ describe('<Form />', () => {
 
     act(() => result.current.onSubmit(mockEvt))
 
-    expect(submit).toHaveBeenCalledWith({ a: 'b' })
-    expect(preValidate).toHaveBeenCalled()
+    setTimeout(() => {
+      expect(submit).toHaveBeenCalledWith({ a: 'b' })
+      expect(preValidate).toHaveBeenCalled()
+
+      done()
+    }, 0)
+  })
+
+  test('should handle onError', done => {
+    const submit = jest.fn()
+    const error = jest.fn()
+    const preValidate = jest.fn()
+
+    const { result } = renderHook(p => useFormState(p), {
+      initialProps: { onError: error, onSubmit: submit, preValidate },
+    })
+
+    const mockEvt = { preventDefault: noop } as React.FormEvent<HTMLFormElement>
 
     act(() =>
       result.current.context.add({
@@ -159,11 +175,14 @@ describe('<Form />', () => {
         value: 'c',
       })
     )
-
     act(() => result.current.onSubmit(mockEvt))
 
-    expect(error).toHaveBeenCalledWith({
-      b: ['nope'],
-    })
+    setTimeout(() => {
+      expect(error).toHaveBeenCalledWith({
+        b: ['nope'],
+      })
+
+      done()
+    }, 0)
   })
 })

@@ -69,7 +69,7 @@ describe('class FormFields', () => {
     expect(u.values).toEqual({})
   })
 
-  test('validates', () => {
+  test('validates', async () => {
     const f = new FormFields({})
     const validate = (v: any) => {
       return v === 'one' ? ['nope'] : true
@@ -78,7 +78,7 @@ describe('class FormFields', () => {
       .add({ key: 'a.b', value: 'one', validate })
       .add({ key: 'a.c', value: 'two', validate })
 
-    let res = u.validate()
+    let res = await u.validate().promise
 
     expect(res.valid).toBe(false)
     expect(res.fields.errors).toEqual({
@@ -89,13 +89,13 @@ describe('class FormFields', () => {
 
     u = res.fields.setValue('a.b', 'three')
 
-    res = u.validate()
+    res = await u.validate().promise
 
     expect(res.valid).toBe(true)
     expect(res.fields.errors).toEqual({})
   })
 
-  test('validates individual field', () => {
+  test('validates individual field', async () => {
     const mockValidation = jest.fn((v: any) => ['nope'])
     const f = new FormFields({}).add({
       key: 'a',
@@ -103,7 +103,7 @@ describe('class FormFields', () => {
       value: '123',
     })
 
-    const res = f.validateField('a')
+    const res = await f.validateField('a').promise
 
     expect(res.valid).toBe(false)
     expect(mockValidation).toHaveBeenCalled()
@@ -128,7 +128,7 @@ describe('class FormFields', () => {
     })
   })
 
-  test('gets status from fields', () => {
+  test('gets status from fields', async () => {
     let f = new FormFields({})
 
     f = f.add({ key: 'a' })
@@ -145,24 +145,21 @@ describe('class FormFields', () => {
       validateOn: 'change',
       value: 'hi2',
     })
-    f = f.setValue('c', 'hi3')
+    f = (await f.validate().promise).fields
 
     expect(f.status).toBe(FormStatus.INVALID)
   })
 
-  test('gets field errors', () => {
+  test('gets field errors', async () => {
     const validate = (v: any) => [v]
     let f = new FormFields({ validateOn: 'change' })
 
     f = f
-      .add({ key: 'a', validate })
-      .add({ key: 'b', validate })
-      .add({ key: 'c' })
+      .add({ key: 'a', value: 'hi', validate })
+      .add({ key: 'b', value: 'hi2', validate })
+      .add({ key: 'c', value: 'hi3' })
 
-    f = f
-      .setValue('a', 'hi')
-      .setValue('b', 'hi2')
-      .setValue('c', 'hi3')
+    f = (await f.validate().promise).fields
 
     expect(f.errors).toEqual({
       a: ['hi'],
@@ -209,16 +206,22 @@ describe('class FormFields', () => {
     expect(transformMock2).toHaveBeenCalledTimes(1)
   })
 
-  test('sets validation', () => {
+  test('sets validation', async () => {
     const validationMock = jest.fn(v => true)
     const validationMock2 = jest.fn(v => true)
-    let f = new FormFields({ validateOn: 'change' })
+    let f = new FormFields({})
 
-    f = f.add({ key: 'a', validate: validationMock }).setValue('a', 'hi')
+    f = f.add({ key: 'a', value: 'hi', validate: validationMock })
+
+    const res = f.validate()
+
+    expect(res.fields.status).toBe(FormStatus.VALIDATING)
+
+    f = (await res.promise).fields
 
     f = f.setValidation('a', validationMock2)
 
-    f = f.setValue('a', 'hi2')
+    f = (await f.validate().promise).fields
 
     expect(validationMock).toHaveBeenCalledTimes(1)
     expect(validationMock2).toHaveBeenCalledTimes(1)
@@ -232,16 +235,14 @@ describe('class FormFields', () => {
       .add({ key: 'a', validate: validationMock, validateOn: 'blur' })
       .setValue('a', 'hi')
 
-    expect(validationMock).not.toHaveBeenCalled()
+    expect(f.getField('a').validateOn).toBe('blur')
 
     f = f.setValidateOn('a', 'change')
 
-    f = f.setValue('a', 'hi2')
-
-    expect(validationMock).toHaveBeenCalled()
+    expect(f.getField('a').validateOn).toBe('change')
   })
 
-  test('sets validation strategy', () => {
+  test('sets validation strategy', async () => {
     const stratMock = jest.fn((v: any, fn: any) => {
       return fn(v)
     })
@@ -250,9 +251,9 @@ describe('class FormFields', () => {
       .add({ key: 'a', value: 'b' })
       .add({ key: 'v', value: 'c' })
 
-    f = f.validate().fields
+    f = (await f.validate().promise).fields
     f = f.setValidationStrategy(stratMock)
-    f = f.validate().fields
+    f = (await f.validate().promise).fields
 
     expect(stratMock).toHaveBeenCalledTimes(2)
   })
@@ -263,19 +264,11 @@ describe('class FormFields', () => {
 
     f = f.add({ key: 'a', validate: validationMock }).setValue('a', 'hi')
 
-    expect(validationMock).not.toHaveBeenCalled()
+    expect(f.getField('a').validateOn).toBe('submit')
 
     f = f.setDefaultValidateOn('change')
 
-    f = f
-      .add({ key: 'b', validate: validationMock, validateOn: 'blur' })
-      .setValue('b', 'hi')
-
-    expect(validationMock).not.toHaveBeenCalled()
-
-    f = f.setValue('a', 'hi2')
-
-    expect(validationMock).toHaveBeenCalled()
+    expect(f.getField('a').validateOn).toBe('change')
   })
 
   test('uses defaults', () => {

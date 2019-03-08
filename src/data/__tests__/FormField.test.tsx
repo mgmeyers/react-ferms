@@ -16,7 +16,7 @@ const def: FormFieldJSON = {
 }
 
 describe('class FormField', () => {
-  test('instantiates from form field definition', () => {
+  test('instantiates from form field definition', async () => {
     let f = new FormField(def)
 
     expect(f.isValid).toBe(true)
@@ -37,7 +37,7 @@ describe('class FormField', () => {
     expect(f.validateOn).toBe('submit')
     expect(f.value).toBe('')
     expect(f.rawValue).toBe('')
-    expect(f.validate().valid).toBe(true)
+    expect((await f.validate().promise).valid).toBe(true)
 
     f = new FormField({
       defaultValidateOn: 'submit',
@@ -66,35 +66,27 @@ describe('class FormField', () => {
   })
 
   test('sets defaultValidateOn', () => {
-    const validateMock = jest.fn(v => v)
     let f = new FormField({
       defaultValidateOn: 'submit',
       key: 'a.b.c',
-      validate: validateMock,
       validationStrategy: defaultValidationStrat,
     })
 
     f = f.setValue('pow')
 
-    expect(validateMock).not.toHaveBeenCalled()
-
     const u = f.setDefaultValidateOn('change')
 
-    expect(f).not.toBe(u)
-
-    u.setValue('wow')
-
-    expect(validateMock).toHaveBeenCalled()
+    expect(u.validateOn).toBe('change')
   })
 
-  test('sets validate', () => {
+  test('sets validate', async () => {
     const validateMock = jest.fn(v => v)
     const f = new FormField(def)
     let u = f.setValidate(validateMock)
 
     expect(f).not.toBe(u)
 
-    u = u.validate().field
+    u = (await u.validate()).field
 
     expect(validateMock).toHaveBeenCalled()
   })
@@ -112,18 +104,14 @@ describe('class FormField', () => {
 
   test('sets value', () => {
     const f = new FormField(def)
-    const validateMock = jest.fn(v => v)
 
-    let u = f.setValidate(validateMock)
-    u = u.setValue('hey')
+    let u = f.setValue('hey')
 
     expect(f).not.toBe(u)
     expect(f.value).not.toBe(u.value)
-    expect(validateMock).not.toHaveBeenCalled()
 
     u = u.setValidateOn('change')
     u = u.setValue('hey2')
-    expect(validateMock).toHaveBeenCalledWith('hey2')
   })
 
   test('sets transform', () => {
@@ -136,17 +124,17 @@ describe('class FormField', () => {
     expect(mock).toHaveBeenCalledWith('hi')
   })
 
-  test('validates', () => {
+  test('validates', async () => {
     const validate = (v: any) => (v === 'hi' ? true : ['error'])
     let f = new FormField(def).setValidate(validate)
-    let res = f.validate()
+    let res = await f.validate().promise
 
     expect(res.valid).toBe(true)
     expect(res.field).not.toBe(f)
     expect(res.field.errors).toEqual([])
 
     f = res.field.setValue('nope')
-    res = f.validate()
+    res = await f.validate().promise
 
     expect(res.valid).toBe(false)
     expect(res.field).not.toBe(f)

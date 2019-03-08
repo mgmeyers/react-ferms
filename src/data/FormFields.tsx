@@ -9,6 +9,7 @@ import {
   AddFieldOpts,
   FormFieldsOptions,
   FormFieldsValidation,
+  FormFieldValidation,
   FormStatus,
   MapStringAny,
   MapStringFormField,
@@ -60,27 +61,46 @@ export default class FormFields {
     )
   }
 
-  validate(): FormFieldsValidation {
+  validate() {
     const {
       options: { fields: currentFields },
     } = this
 
+    const fields: MapStringFormField = {}
+    const promises: Array<Promise<FormFieldValidation>> = []
+
+    const fieldKeys = Object.keys(currentFields)
+
+    fieldKeys.forEach(k => {
+      const res = currentFields[k].validate()
+      fields[k] = res.field
+      promises.push(res.promise)
+    })
+
+    return {
+      fields: new FormFields(prop.set(this.options, 'fields', fields)),
+      promise: this.validateAsync(fieldKeys, promises),
+    }
+  }
+
+  async validateAsync(
+    keys: string[],
+    promises: Array<Promise<FormFieldValidation>>
+  ): Promise<FormFieldsValidation> {
     let valid = true
 
-    const fields = Object.keys(currentFields).reduce(
-      (newFields: MapStringFormField, key) => {
-        const result = currentFields[key].validate()
-
-        if (!result.valid) {
+    const fields = (await Promise.all(promises)).reduce<MapStringFormField>(
+      (results, res, i) => {
+        if (!res.valid) {
           valid = false
         }
 
-        newFields[key] = result.field
+        results[keys[i]] = res.field
 
-        return newFields
+        return results
       },
       {}
-    ) as MapStringFormField
+    )
 
     return {
       fields: new FormFields(prop.set(this.options, 'fields', fields)),
@@ -88,8 +108,20 @@ export default class FormFields {
     }
   }
 
-  validateField(key: string): FormFieldsValidation {
+  validateField(key: string) {
     const result = this.getField(key).validate()
+
+    return {
+      fields: this.update(key, result.field),
+      promise: this.validateFieldAsync(key, result.promise),
+    }
+  }
+
+  async validateFieldAsync(
+    key: string,
+    promise: Promise<FormFieldValidation>
+  ): Promise<FormFieldsValidation> {
+    const result = await promise
 
     return {
       fields: this.update(key, result.field),

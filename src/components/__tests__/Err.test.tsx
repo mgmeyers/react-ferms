@@ -1,59 +1,57 @@
-import { mount } from 'enzyme'
 import * as React from 'react'
+import { cleanup, fireEvent, render } from 'react-testing-library'
 
 import Err, { renderError } from 'components/Err'
 import Form from 'components/Form'
+import Status from 'components/Status'
 import Textarea from 'components/Textarea'
 
 import FormField from 'data/FormField'
 
 import { noop } from 'helpers'
-import { defaultFieldOpts } from './common'
+import { defaultFieldOpts, waitForStatus } from './common'
 
 import { FormStatus } from 'types'
 
 describe('<Error />', () => {
-  test('renders field values', () => {
-    const s = mount(
-      <Form onSubmit={noop}>
-        <Textarea name="test" />
-        <Textarea
-          name="test2"
-          validate={() => {
-            return ['nope', new Error('what'), <span>not even</span>]
-          }}
-          validateOn="change"
-        />
-        <div>
+  afterEach(cleanup)
+
+  test('renders field values', async () => {
+    const mock = jest.fn(() => {
+      return ['nope', new Error('what'), <span>not even</span>]
+    })
+    const s = render(
+      <Form onSubmit={noop} validateOn="change">
+        <Textarea data-testid="i1" name="test" />
+        <Textarea data-testid="i2" name="test2" validate={mock} />
+        <div data-testid="e1">
           <Err name="test" />
         </div>
-        <div className="multi">
+        <div data-testid="e2" className="multi">
           <Err name="test2" />
         </div>
+        <Status
+          render={status => <span data-testid={`${status}`}>status</span>}
+        />
       </Form>
     )
 
-    s.find('textarea')
-      .first()
-      .simulate('change', { target: { value: 'hi' } })
+    fireEvent.change(s.getByTestId('i1'), { target: { value: 'hi' } })
+    await waitForStatus(s.getByTestId)
 
-    s.find('textarea')
-      .last()
-      .simulate('change', { target: { value: 'hey' } })
+    fireEvent.change(s.getByTestId('i2'), { target: { value: 'hey' } })
+    await waitForStatus(s.getByTestId, '2')
 
-    expect(
-      s
-        .find('div')
-        .first()
-        .text()
-    ).toBe('')
+    expect(mock).toHaveBeenCalled()
 
-    const multi = s.find('.multi div')
+    expect(s.getByTestId('e1').textContent).toBe('')
 
-    expect(multi.length).toBe(3)
-    expect(multi.at(0).text()).toBe('nope')
-    expect(multi.at(1).text()).toBe('what')
-    expect(multi.at(2).html()).toBe('<div><span>not even</span></div>')
+    expect(s.getByTestId('e2').childElementCount).toBe(3)
+    expect(s.getByTestId('e2').children.item(0).textContent).toBe('nope')
+    expect(s.getByTestId('e2').children.item(1).textContent).toBe('what')
+    expect(s.getByTestId('e2').children.item(2).innerHTML).toBe(
+      '<span>not even</span>'
+    )
   })
 
   test('calls render function with compiled values', () => {

@@ -1,56 +1,58 @@
-import { mount } from 'enzyme'
 import * as React from 'react'
+import { cleanup, fireEvent, render } from 'react-testing-library'
 
 import Form from 'components/Form'
+import Status from 'components/Status'
 import Textarea from 'components/Textarea'
 import Value, { renderValue } from 'components/Value'
 
 import FormField from 'data/FormField'
 
 import { noop } from 'helpers'
-import { defaultFieldOpts } from './common'
+import { defaultFieldOpts, waitForStatus } from './common'
 
 import { FormStatus } from 'types'
 
 describe('<Value />', () => {
-  test('renders field values', () => {
-    const s = mount(
+  afterEach(cleanup)
+
+  test('renders field values', async () => {
+    const mock = jest.fn(() => {
+      return ['nope']
+    })
+
+    const s = render(
       <Form onSubmit={noop}>
-        <Textarea name="test" />
-        <Textarea name="test2" validate={() => 'nope'} validateOn="change" />
-        <div>
+        <Textarea data-testid="i1" name="test" />
+        <Textarea
+          data-testid="i2"
+          name="test2"
+          validate={mock}
+          validateOn="change"
+        />
+        <div data-testid="v1">
           <Value name="test" />
         </div>
-        <div>
+        <div data-testid="v2">
           <Value
             name={['test', 'test2']}
             render={(vals, stats) => <>{vals.toString() + stats.toString()}</>}
           />
         </div>
+        <Status
+          render={status => <span data-testid={`${status}`}>status</span>}
+        />
       </Form>
     )
 
-    s.find('textarea')
-      .first()
-      .simulate('change', { target: { value: 'hi' } })
+    fireEvent.change(s.getByTestId('i1'), { target: { value: 'hi' } })
+    fireEvent.change(s.getByTestId('i2'), { target: { value: 'hey' } })
+    await waitForStatus(s.getByTestId, '2')
 
-    s.find('textarea')
-      .last()
-      .simulate('change', { target: { value: 'hey' } })
+    expect(mock).toHaveBeenCalled()
 
-    expect(
-      s
-        .find('div')
-        .first()
-        .text()
-    ).toBe('hi')
-
-    expect(
-      s
-        .find('div')
-        .last()
-        .text()
-    ).toBe('hi,hey1,2')
+    expect(s.getByTestId('v1').textContent).toBe('hi')
+    expect(s.getByTestId('v2').textContent).toBe('hi,hey1,2')
   })
 
   test('calls render function with compiled values', () => {

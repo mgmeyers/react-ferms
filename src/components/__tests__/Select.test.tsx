@@ -3,8 +3,11 @@ import { cleanup, fireEvent, render } from 'react-testing-library'
 
 import Form from 'components/Form'
 import Select from 'components/Select'
+import Status from 'components/Status'
 
 import { noop } from 'helpers'
+
+import { changeAndSubmit, waitForStatus } from './common'
 
 describe('<Select />', () => {
   afterEach(cleanup)
@@ -22,7 +25,7 @@ describe('<Select />', () => {
     expect(queryAllByTestId('i1').length).toBe(1)
   })
 
-  test('handles blur event', () => {
+  test('handles blur event', async () => {
     const mock = jest.fn(() => true)
     const onBlur = jest.fn()
 
@@ -39,6 +42,9 @@ describe('<Select />', () => {
             <option value="one">One</option>
             <option value="two">Two</option>
           </Select>
+          <Status
+            render={status => <span data-testid={`${status}`}>status</span>}
+          />
         </Form>
       )
     }
@@ -54,10 +60,12 @@ describe('<Select />', () => {
 
     fireEvent.blur(getByTestId('i1'))
 
+    await waitForStatus(getByTestId)
+
     expect(mock).toHaveBeenCalledWith('two')
   })
 
-  test('handles change event', () => {
+  test('handles change event', async () => {
     const mock = jest.fn(v => true)
     const onChange = jest.fn()
 
@@ -71,17 +79,23 @@ describe('<Select />', () => {
         >
           <option value="one">one</option>
         </Select>
+
+        <Status
+          render={status => <span data-testid={`${status}`}>status</span>}
+        />
       </Form>
     )
 
     fireEvent.change(getByTestId('i1'), { target: { value: 'one' } })
 
+    await waitForStatus(getByTestId)
+
     expect(mock).toHaveBeenCalledWith('one')
     expect(onChange).toHaveBeenCalled()
   })
 
-  test('handles multi-value change event', () => {
-    const mock = jest.fn()
+  test('handles multi-value change event', async () => {
+    const mock = jest.fn(v => true)
     const onChange = jest.fn()
 
     const { getByTestId } = render(
@@ -97,6 +111,9 @@ describe('<Select />', () => {
           <option value="two">Two</option>
           <option value="three">Three</option>
         </Select>
+        <Status
+          render={status => <span data-testid={`${status}`}>status</span>}
+        />
       </Form>
     )
 
@@ -108,11 +125,13 @@ describe('<Select />', () => {
 
     fireEvent.change(getByTestId('i1'))
 
+    await waitForStatus(getByTestId)
+
     expect(mock).toHaveBeenCalledWith(['one', 'three'])
     expect(onChange).toHaveBeenCalled()
   })
 
-  test('returns correct value on form submit', () => {
+  test('returns correct value on form submit', async () => {
     const onSubmit = jest.fn()
     const { getByTestId } = render(
       <Form data-testid="f" onSubmit={onSubmit}>
@@ -124,11 +143,13 @@ describe('<Select />', () => {
           <option value="one">One</option>
           <option value="two">Two</option>
         </Select>
+        <Status
+          render={status => <span data-testid={`${status}`}>status</span>}
+        />
       </Form>
     )
 
-    fireEvent.change(getByTestId('t'), { target: { value: 'two' } })
-    fireEvent.submit(getByTestId('f'))
+    await changeAndSubmit('t', 'two', getByTestId)
 
     expect(onSubmit).toHaveBeenCalledWith({ test: 'twoTWO' })
   })

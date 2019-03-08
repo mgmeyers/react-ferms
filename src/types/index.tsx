@@ -120,6 +120,7 @@ export enum FormStatus {
   PRISTINE,
   DIRTY,
   INVALID,
+  VALIDATING,
 }
 
 export interface FormFieldJSON {

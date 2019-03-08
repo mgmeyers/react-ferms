@@ -2,7 +2,13 @@ import * as React from 'react'
 
 import FormFields from 'data/FormFields'
 
-import { AddFieldOpts, FormProps, TransformFn, ValidateOnOpts } from 'types'
+import {
+  AddFieldOpts,
+  FormFieldsValidation,
+  FormProps,
+  TransformFn,
+  ValidateOnOpts,
+} from 'types'
 
 function useFormEffects(props: FormProps, dispatch: React.Dispatch<Action>) {
   const { defaults, validateOn, validationStrategy } = props
@@ -32,15 +38,19 @@ function useOnSubmit(
         preValidate()
       }
 
-      const results = fields.validate()
+      const res = fields.validate()
 
-      dispatch(() => results.fields)
+      dispatch(() => res.fields)
 
-      if (results.valid) {
-        onSubmit(fields.values)
-      } else if (onError) {
-        onError(results.fields.errors)
-      }
+      res.promise.then(results => {
+        dispatch(() => results.fields)
+
+        if (results.valid) {
+          onSubmit(fields.values)
+        } else if (onError) {
+          onError(results.fields.errors)
+        }
+      })
     },
     [fields, onError, onSubmit, preValidate]
   )
@@ -72,10 +82,34 @@ function useContextValue(fields: FormFields, dispatch: React.Dispatch<Action>) {
         dispatch(f => f.setValidation(key, validate))
       },
       setValue: (key: string, value: string) => {
-        dispatch(f => f.setValue(key, value))
+        dispatch(f => {
+          let flds = f.setValue(key, value)
+
+          if (flds.getField(key).validateOn === 'change') {
+            const results = flds.validateField(key)
+
+            flds = results.fields
+
+            // TODO: Merge fields to keep any updates that happened while waiting for promise
+            results.promise.then((res: FormFieldsValidation) =>
+              dispatch(() => res.fields)
+            )
+          }
+
+          return flds
+        })
       },
       validateField: (key: string) => {
-        dispatch(f => f.validateField(key).fields)
+        dispatch(f => {
+          const results = f.validateField(key)
+
+          // TODO: Merge fields to keep any updates that happened while waiting for promise
+          results.promise.then((res: FormFieldsValidation) =>
+            dispatch(() => res.fields)
+          )
+
+          return results.fields
+        })
       },
     }),
     [fields]

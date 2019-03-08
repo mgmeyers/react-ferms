@@ -18,10 +18,23 @@ export default class FormField {
     this.field = fieldDef
   }
 
-  validate(): FormFieldValidation {
+  validate() {
+    const field = new FormField(prop.set(
+      this.field,
+      'status',
+      FormStatus.VALIDATING
+    ) as FormFieldJSON)
+
+    return {
+      field,
+      promise: field.validateAsync(),
+    }
+  }
+
+  async validateAsync(): Promise<FormFieldValidation> {
     const validationStrategy = this.field.validationStrategy
     const validate = this.field.validate || alwaysValid
-    const results = validationStrategy(this.value, validate)
+    const results = await validationStrategy(this.value, validate)
     const valid = results === true
 
     const updatedField = prop.set.mutate(
@@ -86,10 +99,6 @@ export default class FormField {
 
     if (this.status === FormStatus.PRISTINE) {
       updatedField = updatedField.update('status', FormStatus.DIRTY)
-    }
-
-    if (this.validateOn === 'change') {
-      updatedField = updatedField.validate().field
     }
 
     return updatedField

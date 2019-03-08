@@ -167,6 +167,6 @@ The desired field's name
 
 ## TODO:
 
+* Try / catch async validation
 * Add live examples
-* Async validation
 * Additional strategies

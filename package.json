@@ -1,7 +1,7 @@
 {
   "name": "react-peasy-form",
   "description": "Simple and (mostly) familiar react form components",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "main": "lib/index.cjs.js",
   "esnext": "lib/index.esm.js",
   "typings": "lib/index.d.ts",

@@ -188,4 +188,3 @@ The desired field's name
 ## TODO:
 
 * Add live examples
-* Additional strategies

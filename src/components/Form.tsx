@@ -49,7 +49,6 @@ Form.propTypes = {
   onError: PropTypes.func,
   onSubmit: PropTypes.func.isRequired,
   preValidate: PropTypes.bool,
-  render: PropTypes.func,
   validateOn: PropTypes.string,
   validationStrategy: PropTypes.func,
 }

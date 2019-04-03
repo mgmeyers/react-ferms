@@ -69,7 +69,13 @@ The base form component and context provider for all enclosed form fields.
         <Error name="name.first" />
     </div>
 
-    <button type="submit">Submit</button>
+    <Status render={status => {
+        const disabled = status === FormStatus.VALIDATING || 
+            status == FormStatus.INVALID
+        return (
+            <button disabled={disabled} type="submit">Submit</button>
+        )
+    }} />
 </Form>
 ```
 
@@ -152,6 +158,20 @@ enum FormStatus {
 
 ---
 
+## `<Status />`
+
+Outputs the transformed value of a form field.
+
+### Props
+
+#### `name?: string`
+
+If defined, only this field's status will be passed to `render`
+
+#### `render: (status: FormStatus) => JSX.Element`
+
+---
+
 ## `<Err />`
 
 Outputs any errors associated with a field.
@@ -167,6 +187,5 @@ The desired field's name
 
 ## TODO:
 
-* Try / catch async validation
 * Add live examples
 * Additional strategies

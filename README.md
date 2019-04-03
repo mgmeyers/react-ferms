@@ -160,7 +160,7 @@ enum FormStatus {
 
 ## `<Status />`
 
-Outputs the transformed value of a form field.
+Outputs the status of the form or a specific field.
 
 ### Props
 

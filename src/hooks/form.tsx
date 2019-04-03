@@ -28,7 +28,7 @@ function useOnSubmit(
   fields: FormFields,
   dispatch: React.Dispatch<Action>
 ) {
-  const { onError, onSubmit, preValidate } = props
+  const { onError, onPromiseRejection, onSubmit, preValidate } = props
 
   return React.useMemo(
     () => (e: React.FormEvent<HTMLFormElement>) => {
@@ -42,17 +42,19 @@ function useOnSubmit(
 
       dispatch(() => res.fields)
 
-      res.promise.then(results => {
-        dispatch(() => results.fields)
+      res.promise
+        .then(results => {
+          dispatch(() => results.fields)
 
-        if (results.valid) {
-          onSubmit(fields.values)
-        } else if (onError) {
-          onError(results.fields.errors)
-        }
-      })
+          if (results.valid) {
+            onSubmit(fields.values)
+          } else if (onError) {
+            onError(results.fields.errors)
+          }
+        })
+        .catch(onPromiseRejection)
     },
-    [fields, onError, onSubmit, preValidate]
+    [fields, onError, onPromiseRejection, onSubmit, preValidate]
   )
 }
 
@@ -75,7 +77,11 @@ function mergeValidationResults(to: FormFields, from: FormFields): FormFields {
   }, to)
 }
 
-function useContextValue(fields: FormFields, dispatch: React.Dispatch<Action>) {
+function useContextValue(
+  fields: FormFields,
+  dispatch: React.Dispatch<Action>,
+  onPromiseRejection: (e: any) => void
+) {
   return React.useMemo(
     () => ({
       add: (field: AddFieldOpts) => {
@@ -103,9 +109,11 @@ function useContextValue(fields: FormFields, dispatch: React.Dispatch<Action>) {
 
             flds = results.fields
 
-            results.promise.then((res: FormFieldsValidation) =>
-              dispatch(prev => mergeValidationResults(prev, res.fields))
-            )
+            results.promise
+              .then((res: FormFieldsValidation) =>
+                dispatch(prev => mergeValidationResults(prev, res.fields))
+              )
+              .catch(onPromiseRejection)
           }
 
           return flds
@@ -115,9 +123,11 @@ function useContextValue(fields: FormFields, dispatch: React.Dispatch<Action>) {
         dispatch(f => {
           const results = f.validateField(key)
 
-          results.promise.then((res: FormFieldsValidation) =>
-            dispatch(prev => mergeValidationResults(prev, res.fields))
-          )
+          results.promise
+            .then((res: FormFieldsValidation) =>
+              dispatch(prev => mergeValidationResults(prev, res.fields))
+            )
+            .catch(onPromiseRejection)
 
           return results.fields
         })
@@ -128,7 +138,7 @@ function useContextValue(fields: FormFields, dispatch: React.Dispatch<Action>) {
 }
 
 export function useFormState(props: FormProps) {
-  const { defaults, validateOn, validationStrategy } = props
+  const { defaults, onPromiseRejection, validateOn, validationStrategy } = props
 
   const [fields, dispatch] = React.useReducer(
     reducer,
@@ -142,7 +152,11 @@ export function useFormState(props: FormProps) {
   useFormEffects(props, dispatch)
 
   return {
-    context: useContextValue(fields, dispatch),
+    context: useContextValue(
+      fields,
+      dispatch,
+      onPromiseRejection || console.error
+    ),
     onSubmit: useOnSubmit(props, fields, dispatch),
   }
 }

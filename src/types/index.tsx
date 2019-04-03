@@ -55,6 +55,8 @@ export interface FormProps {
    * Executed when a form's onSubmit validation fails
    */
   onError?(errors: { [key: string]: ValidationResults }): void
+
+  onPromiseRejection?(e: any): void
 }
 
 export interface FormFieldProps {
